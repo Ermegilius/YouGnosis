@@ -1,0 +1,151 @@
+# ======================
+# Environment Variables
+# ======================
+.env
+.env.*
+!.env.production.template
+!.env.local.template
+!.env.example
+!.env.project
+!.env.vault
+
+# ======================
+# Supabase
+# ======================
+supabase/.env.local
+supabase/.env.keys
+!supabase/.env.production
+!supabase/.env.preview
+!.env.supabase.local.template
+supabase-project
+supabase-prod
+supabase-project/volumes/db
+supabase/backup/
+supabase/backup/**/*
+supabase/.temp/
+
+# ======================
+# Dependencies
+# ======================
+node_modules/
+.pnp
+.pnp.js
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+
+# ======================
+# Build Output
+# ======================
+dist/
+dist-ssr/
+build/
+*.local
+
+# Frontend (Vite)
+frontend/dist/
+frontend/dist-ssr/
+frontend/.vite/
+
+# Backend (NestJS)
+backend/dist/
+backend/build/
+
+# ======================
+# Testing
+# ======================
+coverage/
+.nyc_output/
+*.lcov
+
+# Cypress
+cypress/videos/
+cypress/screenshots/
+cypress/downloads/
+
+# ======================
+# Logs
+# ======================
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# ======================
+# OS Files
+# ======================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# ======================
+# IDEs and Editors
+# ======================
+# VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# IntelliJ / WebStorm
+.idea/
+*.iml
+*.ipr
+*.iws
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+
+# Sublime Text
+*.sublime-workspace
+*.sublime-project
+
+# Vim
+*.swp
+*.swo
+*~
+
+# ======================
+# Runtime & Temp Files
+# ======================
+.temp/
+.tmp/
+*.tmp
+
+# Process IDs
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Diagnostic reports
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+# ======================
+# TypeScript
+# ======================
+*.tsbuildinfo
+.tsbuildinfo
+
+# ======================
+# Misc
+# ======================
+.cache/
+.parcel-cache/
+.next/
+.nuxt/
+.output/
+.vercel/
