@@ -36,5 +36,8 @@
   "homepage": "https://github.com/Ermegilius/YouGnosis#readme",
   "devDependencies": {
     "concurrently": "^9.2.1"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.78.0"
   }
 }

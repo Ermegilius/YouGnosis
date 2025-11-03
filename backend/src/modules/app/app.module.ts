@@ -2,6 +2,9 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
+import { SupabaseModule } from '../supabase/supabase.module';
+import { TestDataModule } from '../test-data/test-data.module';
+
 import * as Joi from 'joi';
 
 @Module({
@@ -41,6 +44,8 @@ import * as Joi from 'joi';
         abortEarly: false, // Show all validation errors at once
       },
     }),
+    SupabaseModule,
+    TestDataModule,
   ],
   controllers: [AppController],
   providers: [AppService],
