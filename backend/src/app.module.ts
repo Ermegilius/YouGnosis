@@ -9,15 +9,19 @@ import * as Joi from 'joi';
     ConfigModule.forRoot({
       isGlobal: true,
       cache: true,
-      expandVariables: true, // Enable variable expansion
-      envFilePath: ['../../.env.dev', '../../.env.prod', '../../.env.test'],
+      expandVariables: true, // Enable variable expansion like ${SUPABASE_PROJECT_ID}
+      envFilePath: [
+        `../.env.${process.env.NODE_ENV || 'development'}`, // Environment-specific file
+      ],
 
       validationSchema: Joi.object({
         // Application
         NODE_ENV: Joi.string()
           .valid('development', 'production', 'test')
           .default('development'),
+
         PORT: Joi.number().port().default(3000),
+
         ALLOWED_ORIGINS: Joi.string().default('http://localhost:8000'),
 
         // Supabase
@@ -25,6 +29,8 @@ import * as Joi from 'joi';
         SUPABASE_DB_PASSWORD: Joi.string().required(),
         SUPABASE_URL: Joi.string().uri().required(),
         SUPABASE_STORAGE_URL: Joi.string().uri().required(),
+        SUPABASE_PUBLISHABLE_KEY: Joi.string().required(),
+        SUPABASE_SECRET_KEY_DEFAULT: Joi.string().required(),
 
         // Frontend
         VITE_SUPABASE_URL: Joi.string().uri().required(),

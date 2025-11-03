@@ -13,10 +13,10 @@ async function bootstrap() {
     const configService = app.get(ConfigService);
 
     // Get config values with proper defaults
-    const port = configService.get<number>('PORT') || 3000;
-    const nodeEnv = configService.get<string>('NODE_ENV') || 'development';
+    const port = configService.getOrThrow<number>('PORT');
+    const nodeEnv = configService.getOrThrow<string>('NODE_ENV');
     const allowedOriginsStr =
-      configService.get<string>('ALLOWED_ORIGINS') || 'http://localhost:5173';
+      configService.getOrThrow<string>('ALLOWED_ORIGINS');
 
     // Parse origins - handle both comma-separated and single origin
     const origins = allowedOriginsStr
