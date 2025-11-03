@@ -1,10 +1,11 @@
 {
-  "name": "backend",
-  "version": "0.0.1",
+  "name": "yougnosis_backend",
+  "version": "0.1.0",
   "description": "",
-  "author": "",
+  "author": "Vladimir Beliakov (aka Ermegilius)",
   "private": true,
   "license": "UNLICENSED",
+  "type": "module",
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",

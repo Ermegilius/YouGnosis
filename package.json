@@ -1,0 +1,40 @@
+{
+  "name": "yougnosis",
+  "version": "0.1.0",
+  "private": true,
+  "description": "",
+  "main": "index.js",
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start:backend": "npm --workspace backend run start",
+    "start:backend:dev": "npm --workspace backend run start:dev",
+    "start:backend:debug": "npm --workspace backend run start:debug",
+    "start:backend:prod": "npm --workspace backend run start:prod",
+    "build:backend": "npm --workspace backend run build",
+    "lint:backend": "npm --workspace backend run lint",
+    "test:backend": "npm --workspace backend run test",
+    "test:backend:watch": "npm --workspace backend run test:watch",
+    "test:backend:cov": "npm --workspace backend run test:cov",
+    "test:backend:e2e": "npm --workspace backend run test:e2e",
+    "start": "concurrently \"npm run start:backend:dev\"",
+    "build": "npm run build:backend"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ermegilius/YouGnosis.git"
+  },
+  "author": "Vladimir Beliakov (aka Ermegilius)",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/Ermegilius/YouGnosis/issues"
+  },
+  "homepage": "https://github.com/Ermegilius/YouGnosis#readme",
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}
