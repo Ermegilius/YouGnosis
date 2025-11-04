@@ -25,8 +25,7 @@
     "forceConsistentCasingInFileNames": true,
     "noImplicitAny": false,
     "strictBindCallApply": false,
-    "noFallthroughCasesInSwitch": false,
-    "jsx": "react"
+    "noFallthroughCasesInSwitch": false
   },
   "include": ["src/**/*", "../common/**/*"],
   "exclude": [

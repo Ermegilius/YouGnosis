@@ -7,15 +7,12 @@ export class TestDataService {
   private readonly logger = new Logger(TestDataService.name);
   constructor(private readonly supabaseService: SupabaseService) {}
 
-  async getTestData(): Promise<TestTableRow[]> {
+  async getTestData() {
     this.logger.log('Fetching test data from Supabase...');
 
     const supabase = this.supabaseService.getClient();
 
-    const { data, error } = await supabase
-      .from('test_table')
-      .select('*')
-      .returns<TestTableRow[]>();
+    const { data, error } = await supabase.from('test_table').select('*');
 
     if (error) {
       this.logger.error(`Error fetching test data: ${error.message}`);
@@ -23,6 +20,6 @@ export class TestDataService {
     }
 
     // TypeScript now knows data is non-null after the error check
-    return data ?? [];
+    return (data as TestTableRow[]) ?? [];
   }
 }
