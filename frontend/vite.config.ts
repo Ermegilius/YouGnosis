@@ -2,8 +2,19 @@ import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
 import tsconfigPaths from "vite-tsconfig-paths";
 import path from "path";
+import fs from "fs";
 
 console.log("VITE CONFIG LOADED");
+console.log("__dirname:", __dirname);
+console.log("Common path:", path.resolve(__dirname, "../common"));
+console.log(
+  "Common exists:",
+  fs.existsSync(path.resolve(__dirname, "../common"))
+);
+console.log(
+  "Supabase types exists:",
+  fs.existsSync(path.resolve(__dirname, "../common/supabase.types.ts"))
+);
 
 export default defineConfig(({ mode }) => {
   // Load env files from the root directory (one level up)
@@ -19,6 +30,7 @@ export default defineConfig(({ mode }) => {
       react(),
       tsconfigPaths({
         root: __dirname,
+        projects: ["./tsconfig.app.json"],
       }),
     ],
     resolve: {
