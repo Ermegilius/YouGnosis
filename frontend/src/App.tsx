@@ -1,35 +1,55 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useEffect } from "react";
+import { useLocation } from "react-router-dom";
+import { useAuth } from "@src/hooks/useAuth";
+import { TestDataDisplay } from "@src/components/TestDataDisplay";
+import { Navigation } from "./components/Navigation";
+import { Footer } from "./components/Footer";
 
+/**
+
+ScrollToTop - ensures the window scrolls to top on route change.
+*/
+const ScrollToTop: React.FC = () => {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  return null;
+};
+/**
+
+App - Main dashboard shell for authenticated users.
+Uses Tailwind CSS for layout and styling.
+*/
 function App() {
-  const [count, setCount] = useState(0)
+  const { session } = useAuth();
 
   return (
     <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+      <ScrollToTop />
+      <div className='min-h-screen bg-gradient-to-br from-red-50 via-white to-blue-50 flex flex-col'>
+        <Navigation />
+        <main className='mx-auto w-full max-w-4xl px-4 py-8 flex-1'>
+          <section className='mb-8 rounded-lg bg-white p-6 shadow-md'>
+            <h2 className='mb-2 text-xl font-semibold text-gray-900'>
+              User Profile
+            </h2>
+            <p className='mb-4 text-gray-600'>You are logged in!</p>
+            <div className='rounded bg-gray-100 p-4 text-xs text-gray-800'>
+              <h3 className='mb-2 font-medium text-gray-700'>User Details:</h3>
+              <pre className='overflow-x-auto'>
+                {JSON.stringify(session?.user, null, 2)}
+              </pre>
+            </div>
+          </section>
+          <section>
+            <TestDataDisplay />
+          </section>
+        </main>
+        <Footer />
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
     </>
-  )
+  );
 }
 
-export default App
+export default App;
