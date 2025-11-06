@@ -31,7 +31,9 @@
     "clean:backend": "cd backend && rm -rf node_modules dist",
     "clean:frontend": "cd frontend && rm -rf node_modules dist",
     "clean:all": "rm -rf node_modules && npm run clean",
-    "generate:types": "npx supabase gen types typescript --project-id vlezvlibttcwbvqylzux > common/supabase.types.ts"
+    "generate:types": "npx supabase gen types typescript --project-id vlezvlibttcwbvqylzux > common/supabase.types.ts",
+    "format": "prettier --write .",
+    "format:frontend": "prettier --write \"frontend/**/*.{js,jsx,ts,tsx,css,json}\""
   },
   "repository": {
     "type": "git",

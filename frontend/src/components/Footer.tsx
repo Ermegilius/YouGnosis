@@ -6,7 +6,7 @@ import type { ReactNode } from "react";
  */
 export function Footer(): ReactNode {
   return (
-    <footer className='mt-12 border-t bg-white py-6 text-center text-xs text-gray-400 shadow-inner'>
+    <footer className="mt-12 border-t bg-white py-6 text-center text-xs text-gray-400 shadow-inner">
       &copy; {new Date().getFullYear()} YouGnosis. All rights reserved.
     </footer>
   );

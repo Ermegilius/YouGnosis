@@ -69,9 +69,9 @@ api.interceptors.request.use(
   (error) => {
     console.error("Request error:", error);
     return Promise.reject(
-      error instanceof Error ? error : new Error(String(error))
+      error instanceof Error ? error : new Error(String(error)),
     );
-  }
+  },
 );
 
 // Response interceptor - handle errors and return data
@@ -109,7 +109,7 @@ api.interceptors.response.use(
     });
 
     return Promise.reject(
-      error instanceof Error ? error : new Error(String(error))
+      error instanceof Error ? error : new Error(String(error)),
     );
-  }
+  },
 );
