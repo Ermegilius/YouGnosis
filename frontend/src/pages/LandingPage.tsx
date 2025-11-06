@@ -31,10 +31,10 @@ export default function LandingPage() {
         <div className="absolute inset-0 bg-gradient-to-r from-gray-900/70 via-transparent to-gray-900/40" />
 
         <div className="relative z-10 mx-auto w-full max-w-4xl px-6 text-center">
-          <h1 className="mb-4 text-4xl leading-tight font-extrabold tracking-tight text-white drop-shadow-lg sm:text-5xl md:text-6xl">
+          <h1 className="mb-4 text-4xl leading-tight font-extrabold tracking-tight text-white text-shadow-md sm:text-5xl md:text-6xl">
             Ready to level up your YouTube channel?
           </h1>
-          <p className="mx-auto mb-8 max-w-2xl text-lg text-gray-200 sm:text-xl">
+          <p className="mx-auto mb-8 max-w-2xl text-lg text-white text-shadow-sm sm:text-xl">
             Browse analytics, optimize content, and bring your vision to life
             with data-driven recommendations.
           </p>
