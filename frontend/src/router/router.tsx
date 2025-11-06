@@ -15,7 +15,7 @@ import { LoadingSpinner } from "@src/components/LoadingSpinner";
 function PublicRoute({ children }: { children: ReactNode }) {
   const { session, loading } = useAuth();
   if (loading) return <LoadingSpinner />;
-  if (session) return <Navigate to='/test-data' replace />;
+  if (session) return <Navigate to="/test-data" replace />;
   return children;
 }
 
@@ -32,9 +32,9 @@ export const AppRouter = () => {
   return (
     <Routes>
       {/* Public Routes */}
-      <Route path='/' element={<LandingPage />} />
+      <Route path="/" element={<LandingPage />} />
       <Route
-        path='/login'
+        path="/login"
         element={
           <PublicRoute>
             <LoginPage />
@@ -44,7 +44,7 @@ export const AppRouter = () => {
 
       {/* Protected Routes */}
       <Route
-        path='/dashboard'
+        path="/dashboard"
         element={
           <ProtectedRoute>
             <App />
@@ -52,7 +52,7 @@ export const AppRouter = () => {
         }
       />
       <Route
-        path='/test-data'
+        path="/test-data"
         element={
           <ProtectedRoute>
             <TestDataDisplay />
@@ -61,7 +61,7 @@ export const AppRouter = () => {
       />
 
       {/* Catch-all: redirect based on auth */}
-      <Route path='*' element={<CatchAll />} />
+      <Route path="*" element={<CatchAll />} />
     </Routes>
   );
 };

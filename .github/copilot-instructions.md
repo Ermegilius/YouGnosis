@@ -53,23 +53,9 @@ YouGnosis is a full-stack YouTube analytics and optimization platform that helps
 
 ### Tailwind CSS Guidelines
 
-- Use Tailwind utility classes for styling
+- Use Tailwind v4 best practices for styling
 - Follow mobile-first responsive design with breakpoints: `sm:`, `md:`, `lg:`, `xl:`, `2xl:`
-- Use Tailwind's color palette or define custom colors in `tailwind.config.js`
 - Leverage Tailwind's spacing scale (4px increments)
-- Use `@apply` directive sparingly (only for repeated complex patterns)
-- Extract common patterns into reusable components rather than CSS classes
-- Use Tailwind's dark mode utilities: `dark:` prefix
-- Group related utilities logically (layout → spacing → colors → typography)
-- Use arbitrary values `[value]` only when absolutely necessary
-- Prefer Tailwind's built-in utilities over custom CSS
-
-#### Tailwind Class Organization
-
-```tsx
-// Order: Layout → Flexbox/Grid → Spacing → Sizing → Typography → Colors → Effects → Transitions
-<div className="flex flex-col items-center justify-between gap-4 p-6 w-full max-w-4xl text-lg font-semibold text-gray-900 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200">
-```
 
 ### Backend (Nest.js)
 

@@ -7,7 +7,7 @@ Uses Tailwind CSS for styling and is placed in the /pages folder as per project 
 */
 export default function LoginPage() {
   return (
-    <div className='flex min-h-screen items-center justify-center bg-gradient-to-br from-red-50 via-white to-blue-50 p-4'>
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-red-50 via-white to-blue-50 p-4">
       {" "}
       <Auth />{" "}
     </div>
