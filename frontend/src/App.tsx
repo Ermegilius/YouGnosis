@@ -4,6 +4,7 @@ import { useAuth } from "@src/hooks/useAuth";
 import { TestDataDisplay } from "@src/components/TestDataDisplay";
 import { Navigation } from "./components/Navigation";
 import { Footer } from "./components/Footer";
+import type { ReactNode } from "react";
 
 /**
 
@@ -16,28 +17,27 @@ const ScrollToTop: React.FC = () => {
   }, [pathname]);
   return null;
 };
+
 /**
 
 App - Main dashboard shell for authenticated users.
-Uses Tailwind CSS for layout and styling.
+Uses component classes from index.css for automatic dark mode support.
 */
-function App() {
+function App(): ReactNode {
   const { session } = useAuth();
 
   return (
     <>
       <ScrollToTop />
-      <div className="flex min-h-screen flex-col bg-gradient-to-br from-red-50 via-white to-blue-50">
+      <div className="flex min-h-screen flex-col">
         <Navigation />
-        <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-8">
-          <section className="mb-8 rounded-lg bg-white p-6 shadow-md">
-            <h2 className="mb-2 text-xl font-semibold text-gray-900">
-              User Profile
-            </h2>
-            <p className="mb-4 text-gray-600">You are logged in!</p>
-            <div className="rounded bg-gray-100 p-4 text-xs text-gray-800">
-              <h3 className="mb-2 font-medium text-gray-700">User Details:</h3>
-              <pre className="overflow-x-auto">
+        <main className="container mx-auto flex-1 py-24">
+          <section className="card mb-8">
+            <h2 className="card-title mb-2 text-xl">User Profile</h2>
+            <p className="card-content mb-4">You are logged in!</p>
+            <div className="rounded bg-gray-100 p-4 text-xs">
+              <h3 className="card-title mb-2 text-sm">User Details:</h3>
+              <pre className="card-content overflow-x-auto">
                 {JSON.stringify(session?.user, null, 2)}
               </pre>
             </div>

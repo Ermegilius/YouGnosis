@@ -1,8 +1,17 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@src/hooks/useAuth";
+import { useTheme } from "@src/hooks/useTheme";
 import type { ReactNode } from "react";
 import { useState } from "react";
-import { Menu, X, Github as GithubIcon, User, LogOut } from "lucide-react";
+import {
+  Menu,
+  X,
+  Github as GithubIcon,
+  User,
+  LogOut,
+  Sun,
+  Moon,
+} from "lucide-react";
 
 /**
  * Navigation - unified header for anon + authenticated users
@@ -11,6 +20,7 @@ import { Menu, X, Github as GithubIcon, User, LogOut } from "lucide-react";
  */
 export function Navigation(): ReactNode {
   const { session, signOut } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -21,7 +31,7 @@ export function Navigation(): ReactNode {
 
   return (
     <header
-      className="app-header fixed inset-x-0 top-0 z-50 border-b border-gray-100 bg-white/80 backdrop-blur-sm"
+      className="app-header fixed inset-x-0 top-0 z-50 border-b border-gray-100 bg-white/80 backdrop-blur-sm dark:border-gray-800 dark:bg-gray-900/80"
       role="banner"
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-10">
@@ -43,7 +53,7 @@ export function Navigation(): ReactNode {
                   <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
                 </svg>
               </div>
-              <span className="text-lg font-semibold text-gray-900">
+              <span className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                 YouGnosis
               </span>
             </button>
@@ -53,25 +63,25 @@ export function Navigation(): ReactNode {
           <nav className="hidden md:flex md:flex-1 md:items-center md:justify-center md:gap-8">
             <Link
               to="/"
-              className="text-sm font-medium whitespace-nowrap text-gray-700 hover:text-gray-900"
+              className="text-sm font-medium whitespace-nowrap text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100"
             >
               Home
             </Link>
             <Link
               to="/features"
-              className="text-sm font-medium whitespace-nowrap text-gray-700 hover:text-gray-900"
+              className="text-sm font-medium whitespace-nowrap text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100"
             >
               Features
             </Link>
             <Link
               to="/pricing"
-              className="text-sm font-medium whitespace-nowrap text-gray-700 hover:text-gray-900"
+              className="text-sm font-medium whitespace-nowrap text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100"
             >
               Pricing
             </Link>
             <Link
               to="/docs"
-              className="text-sm font-medium whitespace-nowrap text-gray-700 hover:text-gray-900"
+              className="text-sm font-medium whitespace-nowrap text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100"
             >
               Docs
             </Link>
@@ -83,16 +93,34 @@ export function Navigation(): ReactNode {
               href="https://github.com/ermegilius/yougnosis"
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden items-center gap-2 text-sm font-medium text-gray-700 hover:text-gray-900 sm:inline-flex"
+              className="hidden items-center gap-2 text-sm font-medium text-gray-700 hover:text-gray-900 sm:inline-flex dark:text-gray-300 dark:hover:text-gray-100"
               aria-label="YouGnosis on GitHub"
             >
               <GithubIcon className="h-5 w-5" />
               <span>GitHub</span>
             </a>
 
+            {/* Theme toggle */}
+            <button
+              onClick={toggleTheme}
+              className="inline-flex items-center justify-center rounded-md p-2 text-gray-700 hover:bg-gray-100 focus:outline-none dark:text-gray-300 dark:hover:bg-gray-800"
+              aria-label={
+                theme === "dark"
+                  ? "Switch to light theme"
+                  : "Switch to dark theme"
+              }
+              title={theme === "dark" ? "Light" : "Dark"}
+            >
+              {theme === "dark" ? (
+                <Sun className="h-5 w-5" />
+              ) : (
+                <Moon className="h-5 w-5" />
+              )}
+            </button>
+
             {session ? (
               <div className="flex items-center gap-3">
-                <span className="hidden max-w-[12rem] truncate text-sm text-gray-700 sm:inline">
+                <span className="hidden max-w-[12rem] truncate text-sm text-gray-700 sm:inline dark:text-gray-300">
                   {session.user.email}
                 </span>
                 <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-red-500 to-blue-600 text-sm font-semibold text-white">
@@ -119,7 +147,7 @@ export function Navigation(): ReactNode {
             {/* mobile toggle (Tailwind controls visibility) */}
             <button
               onClick={() => setMobileOpen((v) => !v)}
-              className="ml-1 inline-flex items-center justify-center rounded-md p-2 text-gray-700 hover:bg-gray-100 md:hidden"
+              className="ml-1 inline-flex items-center justify-center rounded-md p-2 text-gray-700 hover:bg-gray-100 md:hidden dark:text-gray-300 dark:hover:bg-gray-800"
               aria-label={mobileOpen ? "Close menu" : "Open menu"}
               aria-expanded={mobileOpen}
             >
@@ -141,37 +169,37 @@ export function Navigation(): ReactNode {
             : "pointer-events-none invisible opacity-0"
         }`}
       >
-        <div className="mx-auto max-w-7xl rounded-b-lg border-t border-gray-100 bg-white/95 px-4 py-4 shadow-lg">
+        <div className="mx-auto max-w-7xl rounded-b-lg border-t border-gray-100 bg-white/95 px-4 py-4 shadow-lg backdrop-blur-sm dark:border-gray-800 dark:bg-gray-900/95">
           <nav className="flex flex-col gap-3">
             <button
               onClick={() => go("/")}
-              className="text-left text-base font-medium text-gray-800"
+              className="text-left text-base font-medium text-gray-800 dark:text-gray-200"
             >
               Home
             </button>
             <button
               onClick={() => go("/features")}
-              className="text-left text-base font-medium text-gray-800"
+              className="text-left text-base font-medium text-gray-800 dark:text-gray-200"
             >
               Features
             </button>
             <button
               onClick={() => go("/pricing")}
-              className="text-left text-base font-medium text-gray-800"
+              className="text-left text-base font-medium text-gray-800 dark:text-gray-200"
             >
               Pricing
             </button>
             <button
               onClick={() => go("/docs")}
-              className="text-left text-base font-medium text-gray-800"
+              className="text-left text-base font-medium text-gray-800 dark:text-gray-200"
             >
               Docs
             </button>
 
-            <div className="mt-3 border-t pt-3">
+            <div className="mt-3 border-t pt-3 dark:border-gray-700">
               {session ? (
                 <>
-                  <p className="mb-2 text-sm text-gray-600">
+                  <p className="mb-2 text-sm text-gray-600 dark:text-gray-400">
                     {session.user.email}
                   </p>
                   <button
@@ -193,7 +221,7 @@ export function Navigation(): ReactNode {
               )}
 
               <a
-                className="mt-3 block text-sm text-gray-700"
+                className="mt-3 block text-sm text-gray-700 dark:text-gray-300"
                 href="https://github.com/ermegilius/yougnosis"
                 target="_blank"
                 rel="noreferrer"

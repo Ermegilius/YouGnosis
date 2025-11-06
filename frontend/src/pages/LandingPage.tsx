@@ -8,10 +8,11 @@ import { ArrowRight } from "lucide-react";
  * LandingPage - refined hero and sections styling
  * - hero uses left-aligned image composition (person left, content centered)
  * - softer overlay, larger readable CTA, improved spacing
+ * - dark mode handled via global CSS in index.css
  */
 export default function LandingPage() {
   return (
-    <div className="flex min-h-screen flex-col bg-white">
+    <div className="flex min-h-screen flex-col">
       <Navigation />
 
       <section className="relative flex min-h-[640px] items-center justify-center pt-20">
@@ -64,54 +65,45 @@ export default function LandingPage() {
         >
           <svg
             viewBox="0 0 1440 120"
-            className="w-full"
+            className="fill-page-bg w-full"
             xmlns="http://www.w3.org/2000/svg"
           >
-            <path
-              d="M0 0L60 10C120 20 240 40 360 46.7C480 53 600 47 720 43.3C840 40 960 40 1080 46.7C1200 53 1320 67 1380 73.3L1440 80V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0V0Z"
-              fill="white"
-            />
+            <path d="M0 0L60 10C120 20 240 40 360 46.7C480 53 600 47 720 43.3C840 40 960 40 1080 46.7C1200 53 1320 67 1380 73.3L1440 80V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0V0Z" />
           </svg>
         </div>
       </section>
 
       {/* features */}
-      <section className="bg-white px-6 py-20">
+      <section className="section">
         <div className="mx-auto max-w-7xl">
           <div className="mb-12 text-center">
-            <h2 className="mb-4 text-2xl font-bold text-gray-900 sm:text-3xl">
+            <h2 className="card-title mb-4 text-2xl sm:text-3xl">
               Unlock Your Channel's Potential
             </h2>
-            <p className="mx-auto max-w-2xl text-base text-gray-600">
+            <p className="card-content mx-auto max-w-2xl text-base">
               Analytics, competitor insights, and SEO recommendations — all in
               one place.
             </p>
           </div>
 
           <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-            <article className="rounded-lg border p-6 shadow-sm hover:shadow-lg">
-              <h3 className="mb-2 text-lg font-semibold text-gray-900">
-                Deep Analytics
-              </h3>
-              <p className="text-sm text-gray-600">
+            <article className="card">
+              <h3 className="card-title mb-2 text-lg">Deep Analytics</h3>
+              <p className="card-content">
                 Views, watch time, retention and more — visualized clearly.
               </p>
             </article>
 
-            <article className="rounded-lg border p-6 shadow-sm hover:shadow-lg">
-              <h3 className="mb-2 text-lg font-semibold text-gray-900">
-                Competitor Analysis
-              </h3>
-              <p className="text-sm text-gray-600">
+            <article className="card">
+              <h3 className="card-title mb-2 text-lg">Competitor Analysis</h3>
+              <p className="card-content">
                 Compare performance and discover winning strategies.
               </p>
             </article>
 
-            <article className="rounded-lg border p-6 shadow-sm hover:shadow-lg">
-              <h3 className="mb-2 text-lg font-semibold text-gray-900">
-                SEO Recommendations
-              </h3>
-              <p className="text-sm text-gray-600">
+            <article className="card">
+              <h3 className="card-title mb-2 text-lg">SEO Recommendations</h3>
+              <p className="card-content">
                 AI-powered title, tag and description suggestions.
               </p>
             </article>
