@@ -75,5 +75,5 @@ export default tseslint.config(
       "prefer-const": "warn",
       "no-unused-expressions": "warn",
     },
-  }
+  },
 );

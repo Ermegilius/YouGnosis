@@ -3,17 +3,18 @@ import react from "@vitejs/plugin-react";
 import tsconfigPaths from "vite-tsconfig-paths";
 import path from "path";
 import fs from "fs";
+import tailwindcss from "@tailwindcss/vite";
 
 console.log("VITE CONFIG LOADED");
 console.log("__dirname:", __dirname);
 console.log("Common path:", path.resolve(__dirname, "../common"));
 console.log(
   "Common exists:",
-  fs.existsSync(path.resolve(__dirname, "../common"))
+  fs.existsSync(path.resolve(__dirname, "../common")),
 );
 console.log(
   "Supabase types exists:",
-  fs.existsSync(path.resolve(__dirname, "../common/supabase.types.ts"))
+  fs.existsSync(path.resolve(__dirname, "../common/supabase.types.ts")),
 );
 
 export default defineConfig(({ mode }) => {
@@ -28,6 +29,7 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [
       react(),
+      tailwindcss(), // Use Tailwind v4 for the project
       tsconfigPaths({
         root: __dirname,
         projects: ["./tsconfig.app.json"],
