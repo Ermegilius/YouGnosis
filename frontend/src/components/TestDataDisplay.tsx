@@ -1,19 +1,23 @@
 import { useEffect, useState } from "react";
-import { testDataApi } from "@src/api/services";
-import { LoadingSpinner } from "./LoadingSpinner";
+import { useAuth } from "@src/hooks/useAuth";
+import type { ReactNode } from "react";
 
 interface TestData {
-  id: string;
-  created_at: string;
-  some_text_here: string | null;
+  message: string;
+  timestamp: string;
+  user?: {
+    id: string;
+    email?: string;
+  };
 }
 
 /**
- * TestDataDisplay - Component to display test data from backend API.
- * Uses LoadingSpinner for loading state.
+ * TestDataDisplay - Component for displaying test data from backend.
+ * Uses component classes from index.css for automatic dark mode support.
  */
-export function TestDataDisplay() {
-  const [data, setData] = useState<TestData[]>([]);
+export function TestDataDisplay(): ReactNode {
+  const { session } = useAuth();
+  const [data, setData] = useState<TestData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -22,61 +26,114 @@ export function TestDataDisplay() {
       try {
         setLoading(true);
         setError(null);
-        const result = await testDataApi.getAllTestData();
+
+        const token = session?.access_token;
+        if (!token) {
+          throw new Error("No access token available");
+        }
+
+        const response = await fetch(
+          `${import.meta.env.VITE_API_URL}/test-data`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          },
+        );
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
         setData(result);
       } catch (err) {
-        console.error("Fetch error:", err);
-        setError(err instanceof Error ? err.message : "Failed to fetch data");
+        const errorMessage =
+          err instanceof Error ? err.message : "Failed to fetch data";
+        setError(errorMessage);
+        console.error("Error fetching test data:", err);
       } finally {
         setLoading(false);
       }
     };
 
-    void fetchData();
-  }, []);
+    if (session) {
+      fetchData();
+    }
+  }, [session]);
 
   if (loading) {
-    return <LoadingSpinner />;
-  }
-
-  if (error) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50">
-        <div className="rounded-lg bg-red-50 p-6 text-center">
-          <svg
-            className="mx-auto h-12 w-12 text-red-600"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
-          <h2 className="mt-4 text-lg font-semibold text-red-900">Error</h2>
-          <p className="mt-2 text-sm text-red-800">{error}</p>
+      <div className="card">
+        <div className="flex items-center justify-center py-8">
+          <span className="spinner h-8 w-8" aria-hidden="true" />
+          <span className="card-content ml-3">Loading test data...</span>
         </div>
       </div>
     );
   }
 
-  return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <div className="mx-auto max-w-4xl">
-        <h2 className="mb-6 text-3xl font-bold text-gray-900">
-          Test Data from Backend
-        </h2>
-        <div className="rounded-lg bg-white p-6 shadow-md">
-          <p className="mb-4 text-sm text-gray-600">
-            Fetched {data.length} records
-          </p>
-          <pre className="overflow-x-auto rounded bg-gray-900 p-4 text-sm text-green-400">
-            {JSON.stringify(data, null, 2)}
-          </pre>
+  if (error) {
+    return (
+      <div className="card">
+        <div
+          className="rounded-lg bg-red-50 p-4 text-sm text-red-800"
+          role="alert"
+        >
+          <strong className="font-medium">Error:</strong> {error}
         </div>
+      </div>
+    );
+  }
+
+  if (!data) {
+    return (
+      <div className="card">
+        <p className="card-content text-center">No data available</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="card">
+      <h2 className="card-title mb-4 text-xl">Backend Test Data</h2>
+
+      <div className="space-y-4">
+        <div>
+          <h3 className="card-title mb-2 text-sm">Message</h3>
+          <p className="card-content">{data.message}</p>
+        </div>
+
+        <div>
+          <h3 className="card-title mb-2 text-sm">Timestamp</h3>
+          <p className="card-content">
+            {new Date(data.timestamp).toLocaleString()}
+          </p>
+        </div>
+
+        {data.user && (
+          <div>
+            <h3 className="card-title mb-2 text-sm">User Info</h3>
+            <div className="card-content space-y-1">
+              <p>
+                <span className="font-medium">ID:</span> {data.user.id}
+              </p>
+              {data.user.email && (
+                <p>
+                  <span className="font-medium">Email:</span> {data.user.email}
+                </p>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="mt-6 rounded-lg bg-gray-50 p-4">
+        <h3 className="card-title mb-2 text-sm">Raw JSON Response</h3>
+        <pre className="card-content overflow-x-auto text-xs">
+          {JSON.stringify(data, null, 2)}
+        </pre>
       </div>
     </div>
   );

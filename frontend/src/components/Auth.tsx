@@ -1,193 +1,81 @@
 import { useState } from "react";
-import { useAuth } from "../hooks/useAuth";
+import { useAuth } from "@src/hooks/useAuth";
+import type { ReactNode } from "react";
 
-export function Auth() {
+/**
+ * Auth - Authentication component for Google OAuth login.
+ * Uses component classes from index.css for automatic dark mode support.
+ */
+export function Auth(): ReactNode {
   const { signInWithGoogle, error } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSignIn = async () => {
-    setIsLoading(true);
+  const handleGoogleLogin = async () => {
     try {
+      setIsLoading(true);
       await signInWithGoogle();
     } catch (err) {
-      console.error("Sign in failed:", err);
+      console.error("Login failed:", err);
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-red-50 via-white to-blue-50 p-4">
-      <div className="w-full max-w-md space-y-8 rounded-2xl bg-white p-8 shadow-xl">
-        {/* Header */}
-        <div className="text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-red-500 to-blue-600">
-            <svg
-              className="h-10 w-10 text-white"
-              fill="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
-            </svg>
-          </div>
-          <h1 className="text-4xl font-bold text-gray-900">YouGnosis</h1>
-          <p className="mt-2 text-sm text-gray-600">
-            YouTube Analytics & Channel Optimization
-          </p>
-        </div>
+    <div className="card w-full max-w-md">
+      <div className="mb-6 text-center">
+        <h1 className="card-title mb-2 text-2xl">Welcome to YouGnosis</h1>
+        <p className="card-content">Sign in to access your YouTube analytics</p>
+      </div>
 
-        {/* Sign In Button */}
-        <div className="space-y-4">
-          <button
-            onClick={handleSignIn}
-            disabled={isLoading}
-            className="group relative flex w-full items-center justify-center gap-3 overflow-hidden rounded-lg bg-white px-4 py-3.5 text-base font-semibold text-gray-900 shadow-md ring-1 ring-gray-300 transition-all hover:bg-gray-50 hover:shadow-lg hover:ring-gray-400 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {/* Google Logo */}
-            <svg className="h-6 w-6 flex-shrink-0" viewBox="0 0 24 24">
+      {error && (
+        <div
+          className="mb-4 rounded-lg bg-red-50 p-4 text-sm text-red-800"
+          role="alert"
+        >
+          <strong className="font-medium">Error:</strong> {error}
+        </div>
+      )}
+
+      <button
+        onClick={handleGoogleLogin}
+        disabled={isLoading}
+        className="btn-primary w-full"
+        aria-label="Sign in with Google"
+      >
+        {isLoading ? (
+          <>
+            <span className="spinner h-5 w-5" aria-hidden="true" />
+            <span>Signing in...</span>
+          </>
+        ) : (
+          <>
+            <svg className="h-5 w-5" viewBox="0 0 24 24" aria-hidden="true">
               <path
-                fill="#4285F4"
+                fill="currentColor"
                 d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
               />
               <path
-                fill="#34A853"
+                fill="currentColor"
                 d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
               />
               <path
-                fill="#FBBC05"
+                fill="currentColor"
                 d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
               />
               <path
-                fill="#EA4335"
+                fill="currentColor"
                 d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
               />
             </svg>
-
-            {/* Button Text */}
-            <span className="flex-grow text-left">
-              {isLoading ? "Connecting to Google..." : "Continue with Google"}
-            </span>
-
-            {/* Loading Spinner */}
-            {isLoading && (
-              <div className="h-5 w-5 animate-spin rounded-full border-2 border-gray-300 border-t-gray-600" />
-            )}
-          </button>
-
-          {/* Info Text */}
-          <div className="flex items-start gap-2 rounded-lg bg-blue-50 p-3">
-            <svg
-              className="mt-0.5 h-5 w-5 flex-shrink-0 text-blue-600"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
-            <p className="text-xs text-blue-800">
-              We'll request access to view your YouTube Analytics data. This
-              helps us provide personalized insights for your channel.
-            </p>
-          </div>
-        </div>
-
-        {/* Error Display */}
-        {error && (
-          <div className="rounded-lg bg-red-50 p-4 text-sm text-red-800">
-            <div className="flex items-start gap-2">
-              <svg
-                className="mt-0.5 h-5 w-5 flex-shrink-0"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              <div>
-                <p className="font-medium">Authentication Error</p>
-                <p className="mt-1">{error}</p>
-              </div>
-            </div>
-          </div>
+            <span>Continue with Google</span>
+          </>
         )}
+      </button>
 
-        {/* Features List */}
-        <div className="space-y-3 border-t pt-6">
-          <p className="text-center text-sm font-medium text-gray-900">
-            What you'll get:
-          </p>
-          <ul className="space-y-2 text-sm text-gray-600">
-            <li className="flex items-center gap-2">
-              <svg
-                className="h-5 w-5 flex-shrink-0 text-green-500"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M5 13l4 4L19 7"
-                />
-              </svg>
-              <span>Detailed channel analytics & insights</span>
-            </li>
-            <li className="flex items-center gap-2">
-              <svg
-                className="h-5 w-5 flex-shrink-0 text-green-500"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M5 13l4 4L19 7"
-                />
-              </svg>
-              <span>Competitor comparison & benchmarking</span>
-            </li>
-            <li className="flex items-center gap-2">
-              <svg
-                className="h-5 w-5 flex-shrink-0 text-green-500"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M5 13l4 4L19 7"
-                />
-              </svg>
-              <span>SEO recommendations & optimization tips</span>
-            </li>
-          </ul>
-        </div>
-
-        {/* Footer */}
-        <p className="text-center text-xs text-gray-500">
-          By continuing, you agree to our{" "}
-          <a href="#" className="underline hover:text-gray-700">
-            Terms of Service
-          </a>{" "}
-          and{" "}
-          <a href="#" className="underline hover:text-gray-700">
-            Privacy Policy
-          </a>
-        </p>
-      </div>
+      <p className="card-content mt-4 text-center text-xs">
+        By continuing, you agree to our Terms of Service and Privacy Policy.
+      </p>
     </div>
   );
 }
