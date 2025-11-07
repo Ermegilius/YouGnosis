@@ -149,3 +149,4 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 .nuxt/
 .output/
 .vercel/
+.github/copilot-instructions.md

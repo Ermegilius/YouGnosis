@@ -1,24 +1,15 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@src/hooks/useAuth";
 import { useTheme } from "@src/hooks/useTheme";
-import type { ReactNode } from "react";
 import { useState } from "react";
-import {
-  Menu,
-  X,
-  Github as GithubIcon,
-  User,
-  LogOut,
-  Sun,
-  Moon,
-} from "lucide-react";
+import { Menu, X, Sun, Moon, LogOut, User } from "lucide-react";
 
 /**
  * Navigation - unified header for anon + authenticated users
  * - use Tailwind responsive classes (no JS media detection)
  * - logo (flex-none) | centered nav (flex-1) | actions (flex-none)
  */
-export function Navigation(): ReactNode {
+export function Navigation() {
   const { session, signOut } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
@@ -34,204 +25,145 @@ export function Navigation(): ReactNode {
       className="app-header fixed inset-x-0 top-0 z-50 border-b border-gray-100 bg-white/80 backdrop-blur-sm dark:border-gray-800 dark:bg-gray-900/80"
       role="banner"
     >
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-10">
-        <div className="flex h-[84px] flex-nowrap items-center justify-between">
-          {/* left: logo (do not shrink) */}
-          <div className="flex flex-none items-center gap-4">
-            <button
-              onClick={() => go(session ? "/dashboard" : "/")}
-              className="flex items-center gap-3 focus:outline-none"
-              aria-label="YouGnosis home"
+      <div className="container mx-auto flex h-[84px] items-center justify-between px-4 sm:px-6 lg:px-10">
+        {/* Left: Logo */}
+        <button
+          onClick={() => go(session ? "/dashboard" : "/")}
+          className="flex items-center gap-3 focus:outline-none"
+          aria-label="YouGnosis home"
+        >
+          <div className="flex h-10 w-10 items-center justify-center rounded-md bg-gradient-to-br from-red-500 to-blue-600 shadow-sm">
+            <svg
+              className="h-6 w-6 text-white"
+              fill="currentColor"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
             >
-              <div className="flex h-10 w-10 items-center justify-center rounded-md bg-gradient-to-br from-red-500 to-blue-600 shadow-sm">
-                <svg
-                  className="h-6 w-6 text-white"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
-                >
-                  <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
-                </svg>
-              </div>
-              <span className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                YouGnosis
-              </span>
-            </button>
+              <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+            </svg>
           </div>
+          <span className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+            YouGnosis
+          </span>
+        </button>
 
-          {/* center: links (desktop) - flex-1 keeps them centered */}
-          <nav className="hidden md:flex md:flex-1 md:items-center md:justify-center md:gap-8">
-            <Link
-              to="/"
-              className="text-sm font-medium whitespace-nowrap text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100"
-            >
-              Home
-            </Link>
-            <Link
-              to="/features"
-              className="text-sm font-medium whitespace-nowrap text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100"
-            >
-              Features
-            </Link>
-            <Link
-              to="/pricing"
-              className="text-sm font-medium whitespace-nowrap text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100"
-            >
-              Pricing
-            </Link>
-            <Link
-              to="/docs"
-              className="text-sm font-medium whitespace-nowrap text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100"
-            >
-              Docs
-            </Link>
-          </nav>
+        {/* Center: Navigation Links */}
+        <nav className="hidden md:flex md:flex-1 md:items-center md:justify-center md:gap-8">
+          <Link
+            to="/dashboard"
+            className="text-sm font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100"
+          >
+            Dashboard
+          </Link>
+          <Link
+            to="/analytics"
+            className="text-sm font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100"
+          >
+            Analytics
+          </Link>
+          <Link
+            to="/competitors"
+            className="text-sm font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100"
+          >
+            Competitors
+          </Link>
+          <Link
+            to="/seo"
+            className="text-sm font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100"
+          >
+            SEO
+          </Link>
+        </nav>
 
-          {/* right: actions (do not grow) */}
-          <div className="flex flex-none items-center gap-3">
-            <a
-              href="https://github.com/ermegilius/yougnosis"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hidden items-center gap-2 text-sm font-medium text-gray-700 hover:text-gray-900 sm:inline-flex dark:text-gray-300 dark:hover:text-gray-100"
-              aria-label="YouGnosis on GitHub"
-            >
-              <GithubIcon className="h-5 w-5" />
-              <span>GitHub</span>
-            </a>
-
-            {/* Theme toggle */}
-            <button
-              onClick={toggleTheme}
-              className="inline-flex items-center justify-center rounded-md p-2 text-gray-700 hover:bg-gray-100 focus:outline-none dark:text-gray-300 dark:hover:bg-gray-800"
-              aria-label={
-                theme === "dark"
-                  ? "Switch to light theme"
-                  : "Switch to dark theme"
-              }
-              title={theme === "dark" ? "Light" : "Dark"}
-            >
-              {theme === "dark" ? (
-                <Sun className="h-5 w-5" />
-              ) : (
-                <Moon className="h-5 w-5" />
-              )}
-            </button>
-
-            {session ? (
-              <div className="flex items-center gap-3">
-                <span className="hidden max-w-[12rem] truncate text-sm text-gray-700 sm:inline dark:text-gray-300">
-                  {session.user.email}
-                </span>
-                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-red-500 to-blue-600 text-sm font-semibold text-white">
-                  {session.user.email?.charAt(0).toUpperCase() || "U"}
-                </div>
-                <button
-                  onClick={signOut}
-                  className="hidden items-center gap-2 rounded-md bg-gradient-to-r from-red-500 to-blue-600 px-3 py-1 text-sm font-medium text-white shadow-sm hover:opacity-95 focus:outline-none sm:inline-flex"
-                >
-                  <LogOut className="h-4 w-4" />
-                  <span>Sign out</span>
-                </button>
-              </div>
+        {/* Right: Actions */}
+        <div className="flex items-center gap-3">
+          {/* Theme Toggle */}
+          <button
+            onClick={toggleTheme}
+            className="inline-flex items-center justify-center rounded-md p-2 text-gray-700 hover:bg-gray-100 focus:outline-none dark:text-gray-300 dark:hover:bg-gray-800"
+            aria-label={
+              theme === "dark"
+                ? "Switch to light theme"
+                : "Switch to dark theme"
+            }
+          >
+            {theme === "dark" ? (
+              <Sun className="h-5 w-5" />
             ) : (
+              <Moon className="h-5 w-5" />
+            )}
+          </button>
+
+          {/* Authenticated User Actions */}
+          {session ? (
+            <div className="flex items-center gap-3">
+              <span className="hidden max-w-[12rem] truncate text-sm text-gray-700 sm:inline dark:text-gray-300">
+                {session.user.email}
+              </span>
               <button
-                onClick={() => go("/login")}
+                onClick={signOut}
                 className="hidden items-center gap-2 rounded-md bg-gradient-to-r from-red-500 to-blue-600 px-3 py-1 text-sm font-medium text-white shadow-sm hover:opacity-95 focus:outline-none sm:inline-flex"
               >
-                <User className="h-4 w-4" />
-                <span>Sign In</span>
+                <LogOut className="h-4 w-4" />
+                <span>Sign out</span>
               </button>
-            )}
-
-            {/* mobile toggle (Tailwind controls visibility) */}
+            </div>
+          ) : (
             <button
-              onClick={() => setMobileOpen((v) => !v)}
-              className="ml-1 inline-flex items-center justify-center rounded-md p-2 text-gray-700 hover:bg-gray-100 md:hidden dark:text-gray-300 dark:hover:bg-gray-800"
-              aria-label={mobileOpen ? "Close menu" : "Open menu"}
-              aria-expanded={mobileOpen}
+              onClick={() => go("/login")}
+              className="hidden items-center gap-2 rounded-md bg-gradient-to-r from-red-500 to-blue-600 px-3 py-1 text-sm font-medium text-white shadow-sm hover:opacity-95 focus:outline-none sm:inline-flex"
             >
-              {mobileOpen ? (
-                <X className="h-6 w-6" aria-hidden="true" />
-              ) : (
-                <Menu className="h-6 w-6" aria-hidden="true" />
-              )}
+              <User className="h-4 w-4" />
+              <span>Sign In</span>
             </button>
-          </div>
+          )}
+
+          {/* Mobile Menu Toggle */}
+          <button
+            onClick={() => setMobileOpen((v) => !v)}
+            className="ml-1 inline-flex items-center justify-center rounded-md p-2 text-gray-700 hover:bg-gray-100 md:hidden dark:text-gray-300 dark:hover:bg-gray-800"
+            aria-label={mobileOpen ? "Close menu" : "Open menu"}
+          >
+            {mobileOpen ? (
+              <X className="h-6 w-6" />
+            ) : (
+              <Menu className="h-6 w-6" />
+            )}
+          </button>
         </div>
       </div>
 
-      {/* mobile menu - absolute overlay (won't push content) */}
-      <div
-        className={`absolute top-[84px] right-0 left-0 z-40 transition-all duration-200 ease-in-out md:hidden ${
-          mobileOpen
-            ? "visible opacity-100"
-            : "pointer-events-none invisible opacity-0"
-        }`}
-      >
-        <div className="mx-auto max-w-7xl rounded-b-lg border-t border-gray-100 bg-white/95 px-4 py-4 shadow-lg backdrop-blur-sm dark:border-gray-800 dark:bg-gray-900/95">
-          <nav className="flex flex-col gap-3">
+      {/* Mobile Menu */}
+      {mobileOpen && (
+        <div className="absolute top-[84px] right-0 left-0 z-40 bg-white dark:bg-gray-900">
+          <nav className="flex flex-col gap-3 p-4">
             <button
-              onClick={() => go("/")}
+              onClick={() => go("/dashboard")}
               className="text-left text-base font-medium text-gray-800 dark:text-gray-200"
             >
-              Home
+              Dashboard
             </button>
             <button
-              onClick={() => go("/features")}
+              onClick={() => go("/analytics")}
               className="text-left text-base font-medium text-gray-800 dark:text-gray-200"
             >
-              Features
+              Analytics
             </button>
             <button
-              onClick={() => go("/pricing")}
+              onClick={() => go("/competitors")}
               className="text-left text-base font-medium text-gray-800 dark:text-gray-200"
             >
-              Pricing
+              Competitors
             </button>
             <button
-              onClick={() => go("/docs")}
+              onClick={() => go("/seo")}
               className="text-left text-base font-medium text-gray-800 dark:text-gray-200"
             >
-              Docs
+              SEO
             </button>
-
-            <div className="mt-3 border-t pt-3 dark:border-gray-700">
-              {session ? (
-                <>
-                  <p className="mb-2 text-sm text-gray-600 dark:text-gray-400">
-                    {session.user.email}
-                  </p>
-                  <button
-                    onClick={signOut}
-                    className="flex w-full items-center justify-center gap-2 rounded-md bg-gradient-to-r from-red-500 to-blue-600 px-3 py-2 text-sm font-medium text-white"
-                  >
-                    <LogOut className="h-4 w-4" />
-                    Sign out
-                  </button>
-                </>
-              ) : (
-                <button
-                  onClick={() => go("/login")}
-                  className="flex w-full items-center justify-center gap-2 rounded-md bg-gradient-to-r from-red-500 to-blue-600 px-3 py-2 text-sm font-medium text-white"
-                >
-                  <User className="h-4 w-4" />
-                  Sign in
-                </button>
-              )}
-
-              <a
-                className="mt-3 block text-sm text-gray-700 dark:text-gray-300"
-                href="https://github.com/ermegilius/yougnosis"
-                target="_blank"
-                rel="noreferrer"
-              >
-                View on GitHub
-              </a>
-            </div>
           </nav>
         </div>
-      </div>
+      )}
     </header>
   );
 }

@@ -7,25 +7,28 @@ import LoginPage from "@src/pages/LoginPage";
 import LandingPage from "@src/pages/LandingPage";
 import type { ReactNode } from "react";
 import { LoadingSpinner } from "@src/components/LoadingSpinner";
+import { AnalyticsDashboard } from "@src/components/AnalyticsDashboard";
+import { CompetitorComparison } from "@src/components/CompetitorComparison";
+import { SEORecommendations } from "@src/components/SEORecommendations";
 
 /**
- * PublicRoute - redirects authenticated users to /test-data.
+ * PublicRoute - redirects authenticated users to /dashboard
  * Shows a loading state while auth is resolving.
  */
 function PublicRoute({ children }: { children: ReactNode }) {
   const { session, loading } = useAuth();
   if (loading) return <LoadingSpinner />;
-  if (session) return <Navigate to="/test-data" replace />;
+  if (session) return <Navigate to="/dashboard" replace />;
   return children;
 }
 
 /**
- * CatchAll - redirect based on auth state (authenticated -> /test-data, else -> /)
+ * CatchAll - redirect based on auth state (authenticated -> /dashboard, else -> /)
  */
 function CatchAll() {
   const { session, loading } = useAuth();
   if (loading) return <LoadingSpinner />;
-  return <Navigate to={session ? "/test-data" : "/"} replace />;
+  return <Navigate to={session ? "/dashboard" : "/"} replace />;
 }
 
 export const AppRouter = () => {
@@ -56,6 +59,30 @@ export const AppRouter = () => {
         element={
           <ProtectedRoute>
             <TestDataDisplay />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/analytics"
+        element={
+          <ProtectedRoute>
+            <AnalyticsDashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/competitors"
+        element={
+          <ProtectedRoute>
+            <CompetitorComparison />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/seo"
+        element={
+          <ProtectedRoute>
+            <SEORecommendations />
           </ProtectedRoute>
         }
       />
