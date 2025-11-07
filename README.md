@@ -51,7 +51,7 @@ You can use YouGnosis for free for **non-commercial purposes**. If you wish to u
   /frontend          # React + Vite frontend
   /backend           # Nest.js backend
   /common            # Shared TypeScript types (supabase.types.ts)
-  .github            # GitHub configuration and Copilot instructions
+  .github            # GitHub configuration
   .env.development   # Root-level environment variables
 ```
 
