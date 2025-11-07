@@ -74,12 +74,12 @@ ALLOWED_ORIGINS=http://127.0.0.1:8000,http://localhost:8000
 **Example:**
 
 ```bash
-SUPABASE_PROJECT_ID=vlezvlibttcwbvqylzux
-SUPABASE_DB_PASSWORD=vLcDnuC807w4Qooy
+SUPABASE_PROJECT_ID=your_project_id
+SUPABASE_DB_PASSWORD=your_db_password
 SUPABASE_URL=https://${SUPABASE_PROJECT_ID}.supabase.co
 SUPABASE_STORAGE_URL=https://${SUPABASE_PROJECT_ID}.supabase.co/storage/v1/s3
-SUPABASE_PUBLISHABLE_KEY=sb_publishable_TFpab_XQ9_hQ_w60BBxPKw_OJ3tLJ52
-SUPABASE_SECRET_KEY_DEFAULT=sb_secret_AlrAQeR2GB2nl_J7Omj4Pw_AV6rqj6Y
+SUPABASE_PUBLISHABLE_KEY=your_publishable_key
+SUPABASE_SECRET_KEY_DEFAULT=your_secret_key
 ```
 
 ### Frontend Configuration
