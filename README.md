@@ -89,7 +89,7 @@ You can use YouGnosis for free for **non-commercial purposes**. If you wish to u
    npm run dev
    ```
 
-   This will start both the backend and frontend servers concurrently.
+   This will start both the backend and frontend servers in development mode concurrently.
 
 ---
 
