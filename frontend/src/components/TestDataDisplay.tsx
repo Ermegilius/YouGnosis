@@ -13,7 +13,6 @@ interface TestData {
 
 /**
  * TestDataDisplay - Component for displaying test data from backend.
- * Uses component classes from index.css for automatic dark mode support.
  */
 export function TestDataDisplay(): ReactNode {
   const { session } = useAuth();
@@ -78,7 +77,7 @@ export function TestDataDisplay(): ReactNode {
     return (
       <div className="card">
         <div
-          className="rounded-lg bg-red-50 p-4 text-sm text-red-800"
+          className="rounded-lg bg-red-50 p-4 text-sm text-red-800 dark:bg-red-900/20 dark:text-red-400"
           role="alert"
         >
           <strong className="font-medium">Error:</strong> {error}
@@ -97,7 +96,7 @@ export function TestDataDisplay(): ReactNode {
 
   return (
     <div className="card">
-      <h2 className="card-title mb-4 text-xl">Backend Test Data</h2>
+      <h2 className="card-title mb-4 text-2xl">Backend Test Data</h2>
 
       <div className="space-y-4">
         <div>
@@ -129,8 +128,8 @@ export function TestDataDisplay(): ReactNode {
         )}
       </div>
 
-      <div className="mt-6 rounded-lg bg-gray-50 p-4">
-        <h3 className="card-title mb-2 text-sm">Raw JSON Response</h3>
+      <div className="mt-6 rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
+        <h3 className="card-title mb-3 text-sm">Raw JSON Response</h3>
         <pre className="card-content overflow-x-auto text-xs">
           {JSON.stringify(data, null, 2)}
         </pre>

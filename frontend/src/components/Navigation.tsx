@@ -50,6 +50,13 @@ export function Navigation() {
         {/* Center: Navigation Links */}
         <nav className="hidden md:flex md:flex-1 md:items-center md:justify-center md:gap-8">
           <Link
+            to="/"
+            className="text-sm font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100"
+          >
+            Home
+          </Link>
+
+          <Link
             to="/dashboard"
             className="text-sm font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100"
           >
