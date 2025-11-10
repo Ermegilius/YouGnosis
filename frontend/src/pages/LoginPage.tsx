@@ -1,4 +1,5 @@
 import { Auth } from "@src/components/Auth";
+import GoogleOAuthButton from "@src/components/GoogleOAuth2Button";
 import type { ReactNode } from "react";
 
 /**
@@ -9,6 +10,7 @@ export default function LoginPage(): ReactNode {
   return (
     <div className="flex min-h-screen items-center justify-center p-4">
       <Auth />
+      <GoogleOAuthButton />
     </div>
   );
 }

@@ -6,6 +6,7 @@ import { SupabaseModule } from '../supabase/supabase.module';
 import { TestDataModule } from '../test-data/test-data.module';
 import * as Joi from 'joi';
 import { YouTubeModule } from '../youtube/youtube.module';
+import { OAuth2Module } from '../oauth2/oauth2.module';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { YouTubeModule } from '../youtube/youtube.module';
     SupabaseModule,
     TestDataModule,
     YouTubeModule,
+    OAuth2Module,
   ],
   controllers: [AppController],
   providers: [AppService],
