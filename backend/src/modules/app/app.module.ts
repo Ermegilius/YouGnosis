@@ -5,6 +5,7 @@ import { ConfigModule } from '@nestjs/config';
 import { SupabaseModule } from '../supabase/supabase.module';
 import { TestDataModule } from '../test-data/test-data.module';
 import * as Joi from 'joi';
+import { YouTubeModule } from '../youtube/youtube.module';
 
 @Module({
   imports: [
@@ -47,6 +48,7 @@ import * as Joi from 'joi';
     }),
     SupabaseModule,
     TestDataModule,
+    YouTubeModule,
   ],
   controllers: [AppController],
   providers: [AppService],
