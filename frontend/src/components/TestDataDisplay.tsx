@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@src/hooks/useAuth";
 import type { ReactNode } from "react";
-import Accordion from "./ui/Accordion";
+import Accordion from "@src/components/ui/accordion";
 
 interface TestData {
   message: string;
@@ -97,10 +97,7 @@ export function TestDataDisplay(): ReactNode {
 
   return (
     <section className="card">
-      <h2 className="card-title mb-4 text-2xl">Test Data from Supabase</h2>
-
       <p className="card-content mb-6">Test-data table rows below:</p>
-
       <Accordion title="Raw JSON Response">
         <pre className="card-content overflow-x-auto text-xs">
           {JSON.stringify(data, null, 2)}
