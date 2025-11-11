@@ -4,19 +4,55 @@ import SessionData from "@src/components/SessionData";
 
 /**
  * DashboardPage - Main dashboard view for authenticated users.
- * Displays user profile and test data.
- * Uses component classes from index.css for automatic dark mode support.
+ * Displays user profile, test data, and placeholder sections for future features.
  */
 export default function DashboardPage(): ReactNode {
   return (
     <div className="space-y-8">
-      {/* User Profile Section */}
-      <SessionData />
+      <DashboardSection title="User Profile">
+        <SessionData />
+      </DashboardSection>
 
-      {/* Test Data Section */}
-      <section>
+      <DashboardSection title="Test Data">
         <TestDataDisplay />
-      </section>
+      </DashboardSection>
+
+      <DashboardSection title="Channel Performance">
+        <PlaceholderContent />
+      </DashboardSection>
+
+      <DashboardSection title="SEO Recommendations">
+        <PlaceholderContent />
+      </DashboardSection>
+
+      <DashboardSection title="Competitor Analysis">
+        <PlaceholderContent />
+      </DashboardSection>
     </div>
   );
+}
+
+/**
+ * DashboardSection - Wrapper for dashboard sections with consistent styling.
+ */
+function DashboardSection({
+  title,
+  children,
+}: {
+  title: string;
+  children: ReactNode;
+}): ReactNode {
+  return (
+    <section className="card">
+      <h2 className="card-title mb-4 text-2xl">{title}</h2>
+      {children}
+    </section>
+  );
+}
+
+/**
+ * PlaceholderContent - Placeholder for sections without data.
+ */
+function PlaceholderContent(): ReactNode {
+  return <p className="card-content">No data available yet.</p>;
 }
