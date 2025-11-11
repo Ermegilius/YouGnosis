@@ -2,7 +2,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@src/hooks/useAuth";
 import { useTheme } from "@src/hooks/useTheme";
 import { useState } from "react";
-import { Menu, X, Sun, Moon, LogOut, User } from "lucide-react";
+import { Menu, X, Sun, Moon, LogOut } from "lucide-react";
+import GoogleOAuth2Button from '@src/components/GoogleOAuth2Button';
 
 /**
  * Navigation - unified header for anon + authenticated users
@@ -116,13 +117,7 @@ export function Navigation() {
               </button>
             </div>
           ) : (
-            <button
-              onClick={() => go("/login")}
-              className="hidden items-center gap-2 rounded-md bg-gradient-to-r from-red-500 to-blue-600 px-3 py-1 text-sm font-medium text-white shadow-sm hover:opacity-95 focus:outline-none sm:inline-flex"
-            >
-              <User className="h-4 w-4" />
-              <span>Sign In</span>
-            </button>
+            <GoogleOAuth2Button />
           )}
 
           {/* Mobile Menu Toggle */}
