@@ -9,7 +9,14 @@ import type { ReactNode } from "react";
 export function ProtectedLayout(): ReactNode {
   const menuItems = [
     { title: "Dashboard", path: "/dashboard" },
-    { title: "Analytics", path: "/analytics" },
+    {
+      title: "Analytics",
+      path: "/analytics",
+      subMenu: [
+        { title: "Overview", path: "/analytics/overview" },
+        { title: "Report Types", path: "/analytics/report-types" },
+      ],
+    },
     { title: "Competitors", path: "/competitors" },
     { title: "SEO", path: "/seo" },
   ];

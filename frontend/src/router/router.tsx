@@ -9,6 +9,7 @@ import { CompetitorComparison } from "@src/components/CompetitorComparison";
 import { SEORecommendations } from "@src/components/SEORecommendations";
 import DashboardPage from "@src/pages/DashboardPage";
 import { ProtectedLayout } from "@src/components/ProtectedLayout";
+import ReportTypes from "@src/pages/ReportTypes";
 
 /**
  * CatchAll - redirect based on auth state (authenticated -> /dashboard, else -> /)
@@ -38,6 +39,7 @@ export const AppRouter = () => {
         >
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/analytics" element={<AnalyticsDashboard />} />
+          <Route path="/analytics/report-types" element={<ReportTypes />} />
           <Route path="/competitors" element={<CompetitorComparison />} />
           <Route path="/seo" element={<SEORecommendations />} />
         </Route>{" "}
