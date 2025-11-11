@@ -1,8 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
-import { YouTubeReportType } from './interfaces/youtube.interface';
+import type { YouTubeReportType } from '@common/youtube.interfaces';
 import { lastValueFrom } from 'rxjs';
+import { OAuth2Service } from '../oauth2/oauth2.service';
 
 @Injectable()
 export class YouTubeService {
@@ -12,29 +13,37 @@ export class YouTubeService {
   constructor(
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,
+    private readonly oauth2Service: OAuth2Service,
   ) {}
 
-  async getAllReportTypes(accessToken: string) {
+  /**
+   * Fetch all YouTube report types using stored user tokens
+   */
+  async getAllReportTypes(userId: string): Promise<YouTubeReportType[]> {
     try {
+      // Get valid access token (auto-refreshes if needed)
+      const accessToken = await this.oauth2Service.getValidAccessToken(userId);
+
       const url = `${this.baseUrl}/reportTypes`;
       const headers = {
         Authorization: `Bearer ${accessToken}`,
       };
+
+      this.logger.debug(`Fetching report types for user ${userId}`);
 
       const response = await lastValueFrom(
         this.httpService.get<{ reportTypes: YouTubeReportType[] }>(url, {
           headers,
         }),
       );
-      return response.data.reportTypes;
+
+      return response.data.reportTypes || [];
     } catch (error: unknown) {
       if (error instanceof Error) {
         this.logger.error('Failed to fetch report types', error.message);
         throw new Error(`Failed to fetch report types: ${error.message}`);
-      } else {
-        this.logger.error('An unknown error occurred');
-        throw new Error('An unknown error occurred');
       }
+      throw new Error('An unknown error occurred');
     }
   }
 }
