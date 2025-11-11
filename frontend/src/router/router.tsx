@@ -10,6 +10,7 @@ import { AnalyticsDashboard } from "@src/components/AnalyticsDashboard";
 import { CompetitorComparison } from "@src/components/CompetitorComparison";
 import { SEORecommendations } from "@src/components/SEORecommendations";
 import DashboardPage from "@src/pages/DashboardPage";
+import { ProtectedLayout } from "@src/components/ProtectedLayout";
 
 /**
  * PublicRoute - redirects authenticated users to /dashboard
@@ -53,10 +54,14 @@ export const AppRouter = () => {
           </ProtectedRoute>
         }
       >
-        <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/analytics" element={<AnalyticsDashboard />} />
-        <Route path="/competitors" element={<CompetitorComparison />} />
-        <Route path="/seo" element={<SEORecommendations />} />
+        <Route
+          element={<ProtectedLayout />} // Wrap authenticated routes with ProtectedLayout
+        >
+          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/analytics" element={<AnalyticsDashboard />} />
+          <Route path="/competitors" element={<CompetitorComparison />} />
+          <Route path="/seo" element={<SEORecommendations />} />
+        </Route>{" "}
       </Route>
 
       {/* Catch-all: redirect based on auth */}
