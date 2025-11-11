@@ -1,5 +1,3 @@
-import React from "react";
-
 export const AnalyticsDashboard = () => {
   return (
     <div className="section">

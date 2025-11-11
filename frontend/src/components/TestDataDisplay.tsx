@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@src/hooks/useAuth";
 import type { ReactNode } from "react";
+import Accordion from "./ui/Accordion";
 
 interface TestData {
   message: string;
@@ -95,45 +96,16 @@ export function TestDataDisplay(): ReactNode {
   }
 
   return (
-    <div className="card">
-      <h2 className="card-title mb-4 text-2xl">Backend Test Data</h2>
+    <section className="card">
+      <h2 className="card-title mb-4 text-2xl">Test Data from Supabase</h2>
 
-      <div className="space-y-4">
-        <div>
-          <h3 className="card-title mb-2 text-sm">Message</h3>
-          <p className="card-content">{data.message}</p>
-        </div>
+      <p className="card-content mb-6">Test-data table rows below:</p>
 
-        <div>
-          <h3 className="card-title mb-2 text-sm">Timestamp</h3>
-          <p className="card-content">
-            {new Date(data.timestamp).toLocaleString()}
-          </p>
-        </div>
-
-        {data.user && (
-          <div>
-            <h3 className="card-title mb-2 text-sm">User Info</h3>
-            <div className="card-content space-y-1">
-              <p>
-                <span className="font-medium">ID:</span> {data.user.id}
-              </p>
-              {data.user.email && (
-                <p>
-                  <span className="font-medium">Email:</span> {data.user.email}
-                </p>
-              )}
-            </div>
-          </div>
-        )}
-      </div>
-
-      <div className="mt-6 rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
-        <h3 className="card-title mb-3 text-sm">Raw JSON Response</h3>
+      <Accordion title="Raw JSON Response">
         <pre className="card-content overflow-x-auto text-xs">
           {JSON.stringify(data, null, 2)}
         </pre>
-      </div>
-    </div>
+      </Accordion>
+    </section>
   );
 }

@@ -20,7 +20,7 @@ export function ProtectedRoute({ children }: ProtectedRouteProps): ReactNode {
   }
 
   if (!session) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/" replace />;
   }
 
   return children;
