@@ -3,42 +3,37 @@ import {
   Get,
   Query,
   Redirect,
-  Logger,
   Res,
-  Req,
-  UnauthorizedException,
+  Logger,
+  BadRequestException,
 } from '@nestjs/common';
-import { Response, Request } from 'express';
+import { Response } from 'express';
 import { OAuth2Service } from './oauth2.service';
+import { ConfigService } from '@nestjs/config';
 
-@Controller('oauth2')
+@Controller('oauth2/google')
 export class OAuth2Controller {
   private readonly logger = new Logger(OAuth2Controller.name);
 
-  constructor(private readonly oauth2Service: OAuth2Service) {}
+  constructor(
+    private readonly oauth2Service: OAuth2Service,
+    private readonly configService: ConfigService,
+  ) {}
 
   /**
-   * Redirect to Google OAuth2 consent screen
-   * Requires authenticated user (x-user-id header)
+   * Initiate Google OAuth flow with YouTube scopes
    */
   @Get('authorize')
   @Redirect()
-  authorize(@Req() req: Request) {
-    // Get user ID from Supabase auth
-    const userId = req.headers['x-user-id'] as string;
-
-    if (!userId) {
-      throw new UnauthorizedException(
-        'User must be authenticated to connect Google account',
-      );
-    }
-
-    const url = this.oauth2Service.generateAuthUrl(userId);
+  authorize() {
+    const url = this.oauth2Service.generateAuthUrl();
+    this.logger.log('Redirecting to Google OAuth with YouTube scopes');
     return { url };
   }
 
   /**
-   * Handle the callback from Google
+   * Handle Google OAuth callback
+   * Exchanges code for tokens and creates Supabase session
    */
   @Get('callback')
   async callback(
@@ -46,38 +41,61 @@ export class OAuth2Controller {
     @Query('state') state: string,
     @Res() res: Response,
   ) {
-    if (!code) {
-      this.logger.error('No authorization code received from Google');
-      return res.redirect(
-        `${process.env.VITE_API_URL?.replace('/api', '')}/dashboard?error=no_code`,
-      );
-    }
-
-    if (!state) {
-      this.logger.error('No state parameter received');
-      return res.redirect(
-        `${process.env.VITE_API_URL?.replace('/api', '')}/dashboard?error=invalid_state`,
-      );
-    }
+    // Get frontend URL from environment
+    const frontendUrl =
+      this.configService.get<string>('VITE_FRONTEND_URL') ||
+      'http://localhost:8000';
 
     try {
-      // Validate state and get user ID
-      const userId = this.oauth2Service.validateStateAndGetUserId(state);
+      // Validate authorization code
+      if (!code) {
+        this.logger.error('No authorization code received from Google');
+        throw new BadRequestException('No authorization code received');
+      }
 
-      this.logger.log(`Received authorization code for user ${userId}`);
+      // Validate state (CSRF protection)
+      if (!state) {
+        this.logger.error('No state parameter received');
+        throw new BadRequestException('Invalid state parameter');
+      }
 
-      await this.oauth2Service.exchangeCodeForTokens(code, userId);
+      this.logger.log('Received Google OAuth callback with code');
 
-      this.logger.log(`Google tokens successfully stored for user ${userId}`);
+      // Exchange code for tokens
+      const tokens = await this.oauth2Service.exchangeCodeForTokens(code);
+      this.logger.log('Successfully exchanged code for Google tokens');
 
-      // Redirect to dashboard with success message
-      return res.redirect(
-        `${process.env.VITE_API_URL?.replace('/api', '')}/dashboard?google_connected=true`,
+      // Get user info from Google
+      const userInfo = await this.oauth2Service.getUserInfo(
+        tokens.access_token,
       );
+      this.logger.log(`Retrieved user info for: ${userInfo.email}`);
+
+      // Create or update Supabase user with Google tokens
+      const user = await this.oauth2Service.createOrUpdateSupabaseUser(
+        userInfo,
+        tokens,
+      );
+      this.logger.log('Supabase user created/updated successfully');
+
+      // Generate a session token for the frontend (pass email)
+      const sessionToken = await this.oauth2Service.generateSessionToken(
+        user.id,
+        userInfo.email,
+      );
+
+      // Redirect to frontend dashboard with session token
+      const redirectUrl = `${frontendUrl}/auth/callback?session_token=${sessionToken}&state=success`;
+      this.logger.log(`Redirecting to frontend: ${redirectUrl}`);
+
+      return res.redirect(redirectUrl);
     } catch (error) {
-      this.logger.error('Failed to process OAuth callback', error);
+      this.logger.error('OAuth callback error:', error);
+
+      const errorMessage =
+        error instanceof Error ? error.message : 'oauth_failed';
       return res.redirect(
-        `${process.env.VITE_API_URL?.replace('/api', '')}/dashboard?error=token_exchange_failed`,
+        `${frontendUrl}/?error=${encodeURIComponent(errorMessage)}`,
       );
     }
   }

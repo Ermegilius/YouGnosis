@@ -1,35 +1,34 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
-import { ConfigService } from '@nestjs/config';
 import type { YouTubeReportType } from '@common/youtube.interfaces';
 import { lastValueFrom } from 'rxjs';
-import { OAuth2Service } from '../oauth2/oauth2.service';
 
 @Injectable()
 export class YouTubeService {
   private readonly logger = new Logger(YouTubeService.name);
   private readonly baseUrl = 'https://youtubereporting.googleapis.com/v1';
 
-  constructor(
-    private readonly httpService: HttpService,
-    private readonly configService: ConfigService,
-    private readonly oauth2Service: OAuth2Service,
-  ) {}
+  constructor(private readonly httpService: HttpService) {}
 
   /**
-   * Fetch all YouTube report types using stored user tokens
+   * Fetch all YouTube report types using Google token from Supabase session
    */
-  async getAllReportTypes(userId: string): Promise<YouTubeReportType[]> {
-    try {
-      // Get valid access token (auto-refreshes if needed)
-      const accessToken = await this.oauth2Service.getValidAccessToken(userId);
+  async getAllReportTypes(
+    googleAccessToken: string,
+  ): Promise<YouTubeReportType[]> {
+    if (!googleAccessToken) {
+      throw new UnauthorizedException(
+        'No Google access token found. Please re-authenticate.',
+      );
+    }
 
+    try {
       const url = `${this.baseUrl}/reportTypes`;
       const headers = {
-        Authorization: `Bearer ${accessToken}`,
+        Authorization: `Bearer ${googleAccessToken}`,
       };
 
-      this.logger.debug(`Fetching report types for user ${userId}`);
+      this.logger.debug('Fetching YouTube report types');
 
       const response = await lastValueFrom(
         this.httpService.get<{ reportTypes: YouTubeReportType[] }>(url, {

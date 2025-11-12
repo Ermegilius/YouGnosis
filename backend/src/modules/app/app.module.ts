@@ -1,12 +1,14 @@
-import { Module } from '@nestjs/common';
+import { Module, MiddlewareConsumer, NestModule } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
-import { SupabaseModule } from '../supabase/supabase.module';
-import { TestDataModule } from '../test-data/test-data.module';
+import { SupabaseModule } from '@src/modules/supabase/supabase.module';
+import { TestDataModule } from '@src/modules/test-data/test-data.module';
 import * as Joi from 'joi';
-import { YouTubeModule } from '../youtube/youtube.module';
-import { OAuth2Module } from '../oauth2/oauth2.module';
+import { YouTubeModule } from '@src/modules/youtube/youtube.module';
+import { AuthModule } from '@src/modules/auth/auth.module';
+import { AuthMiddleware } from '@src/middleware/Auth.middleware';
+import { OAuth2Module } from '@src/modules/oauth2/oaurh2.module';
 
 @Module({
   imports: [
@@ -36,11 +38,18 @@ import { OAuth2Module } from '../oauth2/oauth2.module';
         SUPABASE_SECRET_KEY_DEFAULT: Joi.string()
           .pattern(/^sb_secret_/)
           .required(),
+
+        // Frontend
         VITE_SUPABASE_URL: Joi.string().uri().required(),
         VITE_SUPABASE_PUBLISHABLE_KEY: Joi.string()
           .pattern(/^sb_publishable_/)
           .required(),
         VITE_API_URL: Joi.string().uri().default('http://127.0.0.1:3000/api'),
+        VITE_FRONTEND_URL: Joi.string().uri().default('http://localhost:8000'), // Add this
+
+        // Google OAuth
+        GOOGLE_OAUTH_CLIENT_ID: Joi.string().required(),
+        GOOGLE_OAUTH_CLIENT_SECRET: Joi.string().required(),
       }),
       validationOptions: {
         allowUnknown: true, // Allow extra env vars not in schema
@@ -50,9 +59,15 @@ import { OAuth2Module } from '../oauth2/oauth2.module';
     SupabaseModule,
     TestDataModule,
     YouTubeModule,
+    AuthModule,
     OAuth2Module,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    // Apply auth middleware to protected routes
+    consumer.apply(AuthMiddleware).forRoutes('youtube', 'test-data'); // Routes that need auth
+  }
+}

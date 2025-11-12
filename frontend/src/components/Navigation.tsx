@@ -3,7 +3,7 @@ import { useAuth } from "@src/hooks/useAuth";
 import { useTheme } from "@src/hooks/useTheme";
 import { useState } from "react";
 import { Menu, X, Sun, Moon, LogOut } from "lucide-react";
-import GoogleOAuth2Button from '@src/components/GoogleOAuth2Button';
+import GoogleOAuth2Button from "@src/components/GoogleOAuth2Button";
 
 /**
  * Navigation - unified header for anon + authenticated users
@@ -106,7 +106,7 @@ export function Navigation() {
           {session ? (
             <div className="flex items-center gap-3">
               <span className="hidden max-w-[12rem] truncate text-sm text-gray-700 sm:inline dark:text-gray-300">
-                {session.user.email}
+                {session.user.user_metadata.name}
               </span>
               <button
                 onClick={signOut}

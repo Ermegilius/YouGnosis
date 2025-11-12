@@ -18,13 +18,15 @@ export class YouTubeController {
   async fetchAllReportTypes(@Req() req: Request) {
     this.logger.log('Fetching report types from YouTube Reporting API...');
 
-    // Extract user ID from request (set by auth middleware)
-    const userId = req.headers['x-user-id'] as string;
+    // Extract Google access token from request (set by AuthMiddleware)
+    const googleAccessToken = (req as any).googleAccessToken;
 
-    if (!userId) {
-      throw new UnauthorizedException('User ID is required');
+    if (!googleAccessToken) {
+      throw new UnauthorizedException(
+        'Google access token not found. Please re-authenticate.',
+      );
     }
 
-    return this.youtubeService.getAllReportTypes(userId);
+    return this.youtubeService.getAllReportTypes(googleAccessToken);
   }
 }
