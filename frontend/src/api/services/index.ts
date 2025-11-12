@@ -3,9 +3,7 @@
  * Provides a single entry point for importing API methods
  */
 export { testDataApi } from "./testData";
-
-// Future services (commented out until implemented):
-// export { youtubeApi } from './youtube';
+export { reportTypesApi } from "./youtube";
 // export { analyticsApi } from './analytics';
 // export { userApi } from './users';
 // export { seoApi } from './seo';

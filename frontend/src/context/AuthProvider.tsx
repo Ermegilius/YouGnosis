@@ -20,6 +20,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
         setSession(session);
         setUser(session?.user ?? null);
+
+        // Store user ID in localStorage for API calls
+        if (session?.user?.id) {
+          localStorage.setItem("userId", session.user.id);
+        } else {
+          localStorage.removeItem("userId");
+        }
+
         setLoading(false);
       })
       .catch((err) => {
@@ -35,36 +43,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setSession(session);
       setUser(session?.user ?? null);
       setError(null);
+
+      // Update localStorage when session changes
+      if (session?.user?.id) {
+        localStorage.setItem("userId", session.user.id);
+      } else {
+        localStorage.removeItem("userId");
+      }
     });
 
     return () => subscription.unsubscribe();
   }, []);
-
-  const signInWithGoogle = async (): Promise<void> => {
-    try {
-      setError(null);
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo: `${window.location.origin}/test-data`, // Redirect after sign-in
-          queryParams: {
-            access_type: "offline",
-            prompt: "consent",
-          },
-        },
-      });
-      if (error) {
-        console.error("Sign in error:", error.message);
-        setError(error.message);
-        throw error;
-      }
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Sign in failed";
-      setError(errorMessage);
-      throw err;
-    }
-  };
 
   const signOut = async (): Promise<void> => {
     try {
@@ -77,6 +66,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
       setSession(null);
       setUser(null);
+      localStorage.removeItem("userId");
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Sign out failed";
@@ -86,9 +76,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider
-      value={{ session, user, loading, error, signInWithGoogle, signOut }}
-    >
+    <AuthContext.Provider value={{ session, user, loading, error, signOut }}>
       {children}
     </AuthContext.Provider>
   );

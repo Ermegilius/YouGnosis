@@ -1,5 +1,6 @@
 import axios from "axios";
 import { supabase } from "../supabase/supabase";
+import type { AxiosResponse } from "axios";
 
 // Cache token to avoid unnecessary async calls
 let cachedToken: string | null = null;
@@ -76,10 +77,11 @@ api.interceptors.request.use(
 
 // Response interceptor - handle errors and return data
 api.interceptors.response.use(
-  (response) => {
-    // Return response.data directly for cleaner API calls
-    return response.data;
+  // Success handler - return the full response for type safety
+  (response: AxiosResponse) => {
+    return response;
   },
+  // Error handler
   async (error) => {
     const originalRequest = error.config;
 

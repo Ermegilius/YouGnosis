@@ -1,4 +1,11 @@
-import { Controller, Get, Logger, Headers } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Logger,
+  Req,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { Request } from 'express';
 import { YouTubeService } from './youtube.service';
 
 @Controller('youtube')
@@ -8,12 +15,18 @@ export class YouTubeController {
   constructor(private readonly youtubeService: YouTubeService) {}
 
   @Get('report-types')
-  async fetchAllReportTypes(@Headers('Authorization') authHeader: string) {
+  async fetchAllReportTypes(@Req() req: Request) {
     this.logger.log('Fetching report types from YouTube Reporting API...');
-    const accessToken = authHeader?.replace('Bearer ', '');
-    if (!accessToken) {
-      throw new Error('Authorization token is missing');
+
+    // Extract Google access token from request (set by AuthMiddleware)
+    const googleAccessToken = (req as any).googleAccessToken;
+
+    if (!googleAccessToken) {
+      throw new UnauthorizedException(
+        'Google access token not found. Please re-authenticate.',
+      );
     }
-    return this.youtubeService.getAllReportTypes(accessToken);
+
+    return this.youtubeService.getAllReportTypes(googleAccessToken);
   }
 }
