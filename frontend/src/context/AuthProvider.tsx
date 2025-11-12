@@ -55,34 +55,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const signInWithGoogle = async (): Promise<void> => {
-    try {
-      setError(null);
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo: `${window.location.origin}/dashboard`,
-          queryParams: {
-            access_type: "offline",
-            prompt: "consent", // Always show consent screen
-            include_granted_scopes: "false", // Don't use incremental auth
-          },
-          skipBrowserRedirect: false,
-        },
-      });
-      if (error) {
-        console.error("Sign in error:", error.message);
-        setError(error.message);
-        throw error;
-      }
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Sign in failed";
-      setError(errorMessage);
-      throw err;
-    }
-  };
-
   const signOut = async (): Promise<void> => {
     try {
       setError(null);
@@ -104,9 +76,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider
-      value={{ session, user, loading, error, signInWithGoogle, signOut }}
-    >
+    <AuthContext.Provider value={{ session, user, loading, error, signOut }}>
       {children}
     </AuthContext.Provider>
   );

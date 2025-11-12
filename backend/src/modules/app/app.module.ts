@@ -8,7 +8,7 @@ import * as Joi from 'joi';
 import { YouTubeModule } from '@src/modules/youtube/youtube.module';
 import { AuthModule } from '@src/modules/auth/auth.module';
 import { AuthMiddleware } from '@src/middleware/Auth.middleware';
-import { OAuth2Module } from '@src/modules/oauth2/oaurh2.module';
+import { OAuth2Module } from '@src/modules/oauth2/oauth2.module';
 
 @Module({
   imports: [

@@ -6,7 +6,6 @@ type AuthContextType = {
   user: User | null;
   loading: boolean;
   error: string | null;
-  signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
 };
 
