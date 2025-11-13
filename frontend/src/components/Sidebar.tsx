@@ -25,7 +25,7 @@ export function Sidebar({ menuItems }: SidebarProps): ReactNode {
   };
 
   return (
-    <nav className="w-64 bg-gray-100 p-4 dark:bg-gray-900">
+    <nav className="w-64 bg-gray-100 mr-4 dark:bg-gray-900">
       <ul className="space-y-4">
         {menuItems.map((item) => (
           <li key={item.path}>

@@ -326,6 +326,7 @@
     max-width: 80rem;
     padding-left: 1rem;
     padding-right: 1rem;
+    box-sizing: border-box; /* Ensure padding doesn’t exceed width */
   }
 
   @media (min-width: 640px) {

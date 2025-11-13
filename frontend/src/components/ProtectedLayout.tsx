@@ -27,7 +27,7 @@ export function ProtectedLayout(): ReactNode {
       <Sidebar menuItems={menuItems} />
 
       {/* Main Content */}
-      <div className="flex-1 p-6">
+      <div className="flex-1 overflow-hidden bg-gray-100 dark:bg-gray-900">
         <Outlet />
       </div>
     </div>
