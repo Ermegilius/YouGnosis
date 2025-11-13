@@ -7,25 +7,13 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { HttpService } from '@nestjs/axios';
 import { SupabaseService } from '../supabase/supabase.service';
+import {
+  GoogleProviderMetadata,
+  GoogleTokensResponse,
+  GoogleUserInfoResponse,
+} from '@common/youtube.interfaces';
 import { lastValueFrom } from 'rxjs';
-
-interface GoogleTokenResponse {
-  access_token: string;
-  refresh_token?: string;
-  expires_in: number;
-  scope: string;
-  token_type: string;
-}
-
-interface GoogleUserInfo {
-  id: string;
-  email: string;
-  verified_email: boolean;
-  name: string;
-  given_name: string;
-  family_name: string;
-  picture: string;
-}
+import { AxiosResponse } from 'axios';
 
 @Injectable()
 export class OAuth2Service {
@@ -76,7 +64,7 @@ export class OAuth2Service {
   /**
    * Exchange authorization code for Google access and refresh tokens
    */
-  async exchangeCodeForTokens(code: string): Promise<GoogleTokenResponse> {
+  async exchangeCodeForTokens(code: string): Promise<GoogleTokensResponse> {
     const clientId = this.configService.getOrThrow<string>(
       'GOOGLE_OAUTH_CLIENT_ID',
     );
@@ -86,8 +74,8 @@ export class OAuth2Service {
     const redirectUri = `${this.configService.getOrThrow<string>('VITE_API_URL')}/oauth2/google/callback`;
 
     try {
-      const response = await lastValueFrom(
-        this.httpService.post<GoogleTokenResponse>(
+      const response: AxiosResponse<GoogleTokensResponse> = await lastValueFrom(
+        this.httpService.post<GoogleTokensResponse>(
           this.tokenUrl,
           new URLSearchParams({
             code,
@@ -117,15 +105,16 @@ export class OAuth2Service {
   /**
    * Get user info from Google using access token
    */
-  async getUserInfo(accessToken: string): Promise<GoogleUserInfo> {
+  async getUserInfo(accessToken: string): Promise<GoogleUserInfoResponse> {
     try {
-      const response = await lastValueFrom(
-        this.httpService.get<GoogleUserInfo>(this.userInfoUrl, {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }),
-      );
+      const response: AxiosResponse<GoogleUserInfoResponse> =
+        await lastValueFrom(
+          this.httpService.get<GoogleUserInfoResponse>(this.userInfoUrl, {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          }),
+        );
 
       return response.data;
     } catch (error) {
@@ -141,8 +130,8 @@ export class OAuth2Service {
    * Uses email lookup instead of Google user ID (which is not a UUID)
    */
   async createOrUpdateSupabaseUser(
-    userInfo: GoogleUserInfo,
-    tokens: GoogleTokenResponse,
+    userInfo: GoogleUserInfoResponse,
+    tokens: GoogleTokensResponse,
   ) {
     const supabase = this.supabaseService.getAdminClient();
 
@@ -160,6 +149,19 @@ export class OAuth2Service {
         (user) => user.email === userInfo.email,
       );
 
+      // Create type-safe metadata
+      const metadata: GoogleProviderMetadata = {
+        provider: 'google',
+        provider_id: userInfo.sub,
+        provider_token: tokens.access_token,
+        provider_refresh_token: tokens.refresh_token,
+        provider_token_expires_at: Date.now() + tokens.expires_in * 1000,
+        provider_scopes: tokens.scope || '',
+        name: userInfo.name,
+        given_name: userInfo.given_name,
+        picture: userInfo.picture,
+      };
+
       if (existingUser) {
         // Update existing user with new tokens
         this.logger.log(`Updating existing user: ${userInfo.email}`);
@@ -167,18 +169,7 @@ export class OAuth2Service {
         const { data, error } = await supabase.auth.admin.updateUserById(
           existingUser.id,
           {
-            user_metadata: {
-              provider: 'google',
-              provider_id: userInfo.id,
-              provider_token: tokens.access_token,
-              provider_refresh_token: tokens.refresh_token || null,
-              provider_token_expires_at: Date.now() + tokens.expires_in * 1000,
-              provider_scopes: tokens.scope,
-              name: userInfo.name,
-              given_name: userInfo.given_name,
-              family_name: userInfo.family_name,
-              picture: userInfo.picture,
-            },
+            user_metadata: metadata,
           },
         );
 
@@ -195,19 +186,8 @@ export class OAuth2Service {
 
         const { data, error } = await supabase.auth.admin.createUser({
           email: userInfo.email,
-          email_confirm: userInfo.verified_email,
-          user_metadata: {
-            provider: 'google',
-            provider_id: userInfo.id,
-            provider_token: tokens.access_token,
-            provider_refresh_token: tokens.refresh_token || null,
-            provider_token_expires_at: Date.now() + tokens.expires_in * 1000,
-            provider_scopes: tokens.scope,
-            name: userInfo.name,
-            given_name: userInfo.given_name,
-            family_name: userInfo.family_name,
-            picture: userInfo.picture,
-          },
+          email_confirm: userInfo.email_verified,
+          user_metadata: metadata,
         });
 
         if (error) {
@@ -237,7 +217,7 @@ export class OAuth2Service {
       // Generate a magic link for the user
       const { data, error } = await supabase.auth.admin.generateLink({
         type: 'magiclink',
-        email: email, // Email is required by Supabase
+        email: email,
         options: {
           redirectTo: this.configService.get<string>('VITE_FRONTEND_URL'),
         },
@@ -270,7 +250,9 @@ export class OAuth2Service {
   /**
    * Refresh Google access token using refresh token
    */
-  async refreshAccessToken(refreshToken: string): Promise<GoogleTokenResponse> {
+  async refreshAccessToken(
+    refreshToken: string,
+  ): Promise<GoogleTokensResponse> {
     const clientId = this.configService.getOrThrow<string>(
       'GOOGLE_OAUTH_CLIENT_ID',
     );
@@ -279,8 +261,8 @@ export class OAuth2Service {
     );
 
     try {
-      const response = await lastValueFrom(
-        this.httpService.post<GoogleTokenResponse>(
+      const response: AxiosResponse<GoogleTokensResponse> = await lastValueFrom(
+        this.httpService.post<GoogleTokensResponse>(
           this.tokenUrl,
           new URLSearchParams({
             refresh_token: refreshToken,

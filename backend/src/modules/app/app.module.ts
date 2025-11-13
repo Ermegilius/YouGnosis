@@ -6,7 +6,6 @@ import { SupabaseModule } from '@src/modules/supabase/supabase.module';
 import { TestDataModule } from '@src/modules/test-data/test-data.module';
 import * as Joi from 'joi';
 import { YouTubeModule } from '@src/modules/youtube/youtube.module';
-import { AuthModule } from '@src/modules/auth/auth.module';
 import { AuthMiddleware } from '@src/middleware/Auth.middleware';
 import { OAuth2Module } from '@src/modules/oauth2/oauth2.module';
 
@@ -45,7 +44,7 @@ import { OAuth2Module } from '@src/modules/oauth2/oauth2.module';
           .pattern(/^sb_publishable_/)
           .required(),
         VITE_API_URL: Joi.string().uri().default('http://127.0.0.1:3000/api'),
-        VITE_FRONTEND_URL: Joi.string().uri().default('http://localhost:8000'), // Add this
+        VITE_FRONTEND_URL: Joi.string().uri().default('http://localhost:8000'),
 
         // Google OAuth
         GOOGLE_OAUTH_CLIENT_ID: Joi.string().required(),
@@ -59,7 +58,6 @@ import { OAuth2Module } from '@src/modules/oauth2/oauth2.module';
     SupabaseModule,
     TestDataModule,
     YouTubeModule,
-    AuthModule,
     OAuth2Module,
   ],
   controllers: [AppController],
