@@ -5,7 +5,11 @@
  * This ensures both sides agree on the API structure.
  */
 
-import type { YouTubeJob, YouTubeReportType } from "./youtube.types";
+import type {
+  YouTubeJob,
+  YouTubeReportType,
+  YouTubeReport,
+} from "./youtube.types";
 
 // ===========================
 // Authentication Types
@@ -50,6 +54,24 @@ export type CreateJobResponse = YouTubeJob;
  * Response when fetching YouTube report types
  */
 export type ReportTypesResponse = YouTubeReportType[];
+
+/**
+ * Response when fetching YouTube reporting jobs
+ */
+export type JobsListResponse = YouTubeJob[];
+
+/**
+ * Response when listing reports for a job
+ */
+export type ReportsListResponse = YouTubeReport[];
+
+/**
+ * Response when downloading a report
+ */
+export interface DownloadReportResponse {
+  data: string; // CSV data
+  filename: string;
+}
 
 // ===========================
 // Error Responses
