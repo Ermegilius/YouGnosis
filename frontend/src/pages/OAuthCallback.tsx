@@ -16,7 +16,6 @@ export default function OAuthCallback(): ReactNode {
   useEffect(() => {
     const handleCallback = async () => {
       const sessionToken = searchParams.get("session_token");
-      const state = searchParams.get("state");
       const errorParam = searchParams.get("error");
 
       // Handle OAuth error from backend
@@ -43,8 +42,6 @@ export default function OAuthCallback(): ReactNode {
         if (verifyError || !data.session) {
           throw new Error("Failed to verify session token");
         }
-
-        console.log("✅ Session established successfully");
 
         // Store user ID for API calls
         if (data.user?.id) {

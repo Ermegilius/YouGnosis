@@ -11,7 +11,7 @@ export class SupabaseService implements OnModuleInit {
 
   constructor(private readonly configService: ConfigService) {}
 
-  onModuleInit() {
+  onModuleInit(): void {
     const supabaseUrl = this.configService.getOrThrow<string>('SUPABASE_URL');
     const publishableKey = this.configService.getOrThrow<string>(
       'SUPABASE_PUBLISHABLE_KEY',
@@ -73,7 +73,7 @@ export class SupabaseService implements OnModuleInit {
         .limit(1);
 
       if (error) {
-        this.logger.error(`Health check failed: ${error.message}`);
+        this.logger.error('❌ Supabase health check failed:', error.message);
         return {
           status: 'unhealthy',
           details: error.message,
@@ -85,10 +85,11 @@ export class SupabaseService implements OnModuleInit {
         status: 'healthy',
       };
     } catch (error) {
-      this.logger.error('Health check error:', error);
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error('❌ Supabase health check error:', message);
       return {
         status: 'unhealthy',
-        details: error instanceof Error ? error.message : 'Unknown error',
+        details: message,
       };
     }
   }

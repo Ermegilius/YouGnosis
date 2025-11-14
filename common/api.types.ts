@@ -1,0 +1,79 @@
+/**
+ * API Contract Types
+ * ==================
+ * Define the shape of data exchanged between frontend and backend.
+ * This ensures both sides agree on the API structure.
+ */
+
+import type { YouTubeJob, YouTubeReportType } from "./youtube.types";
+
+// ===========================
+// Authentication Types
+// ===========================
+
+/**
+ * Authenticated user information
+ * Attached to requests by AuthMiddleware
+ */
+export interface AuthenticatedUser {
+  id: string;
+  email: string;
+}
+
+/**
+ * OAuth callback query parameters
+ */
+export interface OAuthCallbackQuery {
+  code: string;
+  state: string;
+  error?: string;
+}
+
+// ===========================
+// YouTube API Endpoints
+// ===========================
+
+/**
+ * Request body for creating a YouTube reporting job
+ */
+export interface CreateJobRequest {
+  reportTypeId: string;
+  name: string;
+}
+
+/**
+ * Response when creating a YouTube reporting job
+ */
+export type CreateJobResponse = YouTubeJob;
+
+/**
+ * Response when fetching YouTube report types
+ */
+export type ReportTypesResponse = YouTubeReportType[];
+
+// ===========================
+// Error Responses
+// ===========================
+
+/**
+ * Standard error response format
+ */
+export interface ApiErrorResponse {
+  statusCode: number;
+  message: string;
+  error?: string;
+  timestamp?: string;
+}
+
+// ===========================
+// Health Check
+// ===========================
+
+/**
+ * Health check response
+ */
+export interface HealthCheckResponse {
+  status: "healthy" | "unhealthy";
+  details?: string;
+  timestamp: string;
+}

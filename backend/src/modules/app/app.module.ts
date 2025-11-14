@@ -1,17 +1,17 @@
-import { Module, MiddlewareConsumer, NestModule } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import * as Joi from 'joi';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { ConfigModule } from '@nestjs/config';
 import { SupabaseModule } from '@src/modules/supabase/supabase.module';
 import { TestDataModule } from '@src/modules/test-data/test-data.module';
-import * as Joi from 'joi';
 import { YouTubeModule } from '@src/modules/youtube/youtube.module';
-import { AuthModule } from '@src/modules/auth/auth.module';
-import { AuthMiddleware } from '@src/middleware/Auth.middleware';
 import { OAuth2Module } from '@src/modules/oauth2/oauth2.module';
+import { AuthMiddleware } from '@src/middleware/Auth.middleware';
 
 @Module({
   imports: [
+    // Load environment variables with validation
     ConfigModule.forRoot({
       isGlobal: true,
       cache: true,
@@ -44,30 +44,25 @@ import { OAuth2Module } from '@src/modules/oauth2/oauth2.module';
         VITE_SUPABASE_PUBLISHABLE_KEY: Joi.string()
           .pattern(/^sb_publishable_/)
           .required(),
-        VITE_API_URL: Joi.string().uri().default('http://127.0.0.1:3000/api'),
-        VITE_FRONTEND_URL: Joi.string().uri().default('http://localhost:8000'), // Add this
+        VITE_API_URL: Joi.string().required(),
+        VITE_FRONTEND_URL: Joi.string().required(),
 
         // Google OAuth
         GOOGLE_OAUTH_CLIENT_ID: Joi.string().required(),
         GOOGLE_OAUTH_CLIENT_SECRET: Joi.string().required(),
       }),
-      validationOptions: {
-        allowUnknown: true, // Allow extra env vars not in schema
-        abortEarly: false, // Show all validation errors at once
-      },
     }),
     SupabaseModule,
     TestDataModule,
     YouTubeModule,
-    AuthModule,
     OAuth2Module,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
 export class AppModule implements NestModule {
-  configure(consumer: MiddlewareConsumer) {
-    // Apply auth middleware to protected routes
-    consumer.apply(AuthMiddleware).forRoutes('youtube', 'test-data'); // Routes that need auth
+  // ✅ Added explicit return type
+  configure(consumer: MiddlewareConsumer): void {
+    consumer.apply(AuthMiddleware).forRoutes('youtube');
   }
 }
