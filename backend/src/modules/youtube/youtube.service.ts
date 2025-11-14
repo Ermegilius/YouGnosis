@@ -5,7 +5,11 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
-import type { YouTubeReportType, YouTubeJob } from '@common/youtube.types';
+import type {
+  YouTubeReportType,
+  YouTubeJob,
+  YouTubeReport,
+} from '@common/youtube.types';
 import { lastValueFrom } from 'rxjs';
 import { SupabaseService } from '../supabase/supabase.service';
 import { AxiosResponse, AxiosError } from 'axios';
@@ -16,6 +20,13 @@ import { isYouTubeApiErrorResponse } from '@src/types';
  */
 interface ReportTypesResponse {
   reportTypes: YouTubeReportType[];
+}
+
+/**
+ * YouTube Reporting API response for reports list
+ */
+interface ReportsResponse {
+  reports?: YouTubeReport[];
 }
 
 @Injectable()
@@ -77,6 +88,7 @@ export class YouTubeService {
       const url = `${this.baseUrl}/jobs`;
       const headers = {
         Authorization: `Bearer ${googleAccessToken}`,
+        'Content-Type': 'application/json',
       };
       const body = {
         reportTypeId,
@@ -84,6 +96,7 @@ export class YouTubeService {
       };
 
       this.logger.debug('Creating a new reporting job');
+      this.logger.debug(`Request body: ${JSON.stringify(body, null, 2)}`);
 
       const response: AxiosResponse<YouTubeJob> = await lastValueFrom(
         this.httpService.post<YouTubeJob>(url, body, { headers }),
@@ -137,6 +150,137 @@ export class YouTubeService {
   }
 
   /**
+   * List all existing YouTube Reporting jobs
+   */
+  async listReportingJobs(googleAccessToken: string): Promise<YouTubeJob[]> {
+    if (!googleAccessToken) {
+      throw new UnauthorizedException(
+        'No Google access token found. Please re-authenticate.',
+      );
+    }
+
+    try {
+      const url = `${this.baseUrl}/jobs`;
+      const headers = {
+        Authorization: `Bearer ${googleAccessToken}`,
+      };
+
+      this.logger.debug('Fetching existing YouTube reporting jobs');
+
+      interface JobsResponse {
+        jobs?: YouTubeJob[];
+      }
+
+      const response: AxiosResponse<JobsResponse> = await lastValueFrom(
+        this.httpService.get<JobsResponse>(url, { headers }),
+      );
+
+      return response.data.jobs || [];
+    } catch (error: unknown) {
+      this.handleYouTubeApiError(error, 'Failed to fetch reporting jobs');
+    }
+  }
+
+  /**
+   * List all available reports for a specific job
+   * Reports are generated periodically by YouTube (usually daily)
+   *
+   * @param googleAccessToken - Google OAuth access token
+   * @param jobId - YouTube job ID to fetch reports for
+   * @returns Array of available reports with download URLs
+   */
+  async listReports(
+    googleAccessToken: string,
+    jobId: string,
+  ): Promise<YouTubeReport[]> {
+    if (!googleAccessToken) {
+      throw new UnauthorizedException(
+        'No Google access token found. Please re-authenticate.',
+      );
+    }
+
+    try {
+      const url = `${this.baseUrl}/jobs/${jobId}/reports`;
+      const headers = {
+        Authorization: `Bearer ${googleAccessToken}`,
+      };
+
+      this.logger.debug(`Fetching reports for job: ${jobId}`);
+
+      const response: AxiosResponse<ReportsResponse> = await lastValueFrom(
+        this.httpService.get<ReportsResponse>(url, { headers }),
+      );
+
+      const reports = response.data.reports || [];
+      this.logger.log(`Found ${reports.length} reports for job ${jobId}`);
+
+      return reports;
+    } catch (error: unknown) {
+      this.handleYouTubeApiError(error, 'Failed to fetch reports');
+    }
+  }
+
+  /**
+   * Download report data from YouTube
+   * Returns raw CSV data from the report
+   *
+   * @param googleAccessToken - Google OAuth access token
+   * @param jobId - YouTube job ID
+   * @param reportId - YouTube report ID to download
+   * @returns CSV data as string
+   */
+  async downloadReport(
+    googleAccessToken: string,
+    jobId: string,
+    reportId: string,
+  ): Promise<string> {
+    if (!googleAccessToken) {
+      throw new UnauthorizedException(
+        'No Google access token found. Please re-authenticate.',
+      );
+    }
+
+    try {
+      const url = `${this.baseUrl}/jobs/${jobId}/reports/${reportId}`;
+      const headers = {
+        Authorization: `Bearer ${googleAccessToken}`,
+        Accept: 'text/csv', // Request CSV format
+      };
+
+      this.logger.debug(`Downloading report: ${reportId} from job: ${jobId}`);
+
+      // Get the report metadata first to get the download URL
+      const metadataResponse: AxiosResponse<YouTubeReport> =
+        await lastValueFrom(
+          this.httpService.get<YouTubeReport>(url, { headers }),
+        );
+
+      const downloadUrl = metadataResponse.data.downloadUrl;
+
+      if (!downloadUrl) {
+        throw new InternalServerErrorException('Report download URL not found');
+      }
+
+      this.logger.debug(`Downloading from URL: ${downloadUrl}`);
+
+      // Download the actual report data
+      const dataResponse: AxiosResponse<string> = await lastValueFrom(
+        this.httpService.get<string>(downloadUrl, {
+          headers: {
+            Authorization: `Bearer ${googleAccessToken}`,
+          },
+          responseType: 'text', // Get response as text (CSV)
+        }),
+      );
+
+      this.logger.log(`Successfully downloaded report: ${reportId}`);
+      return dataResponse.data;
+    } catch (error: unknown) {
+      this.handleYouTubeApiError(error, 'Failed to download report');
+    }
+  }
+
+  /**
    * Handle YouTube API errors with proper logging and type checking
    * Private helper method to centralize error handling
    *
@@ -155,6 +299,11 @@ export class YouTubeService {
       let message = error.message;
       let errorCode: number | undefined = status;
       let errorReason: string | undefined;
+
+      // ✅ Log the full error response for debugging
+      this.logger.debug(
+        `Full YouTube API error response: ${JSON.stringify(responseData, null, 2)}`,
+      );
 
       // Type guard narrows unknown to YouTubeApiErrorResponse
       // After this check, TypeScript knows responseData.error is properly typed
@@ -191,6 +340,24 @@ export class YouTubeService {
       if (status === 401 || status === 403) {
         throw new UnauthorizedException(
           'YouTube API authentication failed. Please re-authenticate.',
+        );
+      }
+
+      // ✅ Handle "Already Exists" error (409 or specific message pattern)
+      if (
+        status === 409 ||
+        message.toLowerCase().includes('already exists') ||
+        errorReason === 'ALREADY_EXISTS'
+      ) {
+        throw new InternalServerErrorException(
+          `A reporting job for this report type already exists. Each report type can only have one active job per channel.`,
+        );
+      }
+
+      // ✅ Provide more specific error messages for common issues
+      if (status === 400) {
+        throw new InternalServerErrorException(
+          `YouTube API error: ${message}. Please verify the reportTypeId is valid.`,
         );
       }
 

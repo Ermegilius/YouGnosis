@@ -4,11 +4,17 @@ import {
   Get,
   Logger,
   Post,
+  Query,
   Req,
   UnauthorizedException,
+  BadRequestException,
 } from '@nestjs/common';
 import { YouTubeService } from './youtube.service';
-import { YouTubeJob, YouTubeReportType } from '@common/youtube.types';
+import {
+  YouTubeJob,
+  YouTubeReportType,
+  YouTubeReport,
+} from '@common/youtube.types';
 import { AuthenticatedRequest } from '../../middleware/interfaces/authenticated-request.interface';
 
 // Simple DTO type - no class needed
@@ -42,6 +48,27 @@ export class YouTubeController {
   }
 
   /**
+   * Fetch all existing YouTube reporting jobs for the authenticated user
+   * Requires valid Google OAuth token with YouTube scopes
+   */
+  @Get('jobs')
+  async listReportingJobs(
+    @Req() req: AuthenticatedRequest,
+  ): Promise<YouTubeJob[]> {
+    this.logger.log('Fetching existing YouTube Reporting jobs...');
+
+    const googleAccessToken = req.googleAccessToken;
+
+    if (!googleAccessToken) {
+      throw new UnauthorizedException(
+        'Google access token not found. Please re-authenticate.',
+      );
+    }
+
+    return this.youtubeService.listReportingJobs(googleAccessToken);
+  }
+
+  /**
    * Create a new YouTube reporting job
    * Requires valid Google OAuth token with YouTube scopes
    */
@@ -72,5 +99,75 @@ export class YouTubeController {
       createJobDto.name,
       userId,
     );
+  }
+
+  /**
+   * List all available reports for a specific job
+   * Requires valid Google OAuth token with YouTube scopes
+   *
+   * @param jobId - The YouTube job ID to fetch reports for
+   * @returns Array of available reports with download URLs
+   */
+  @Get('reports')
+  async listReports(
+    @Req() req: AuthenticatedRequest,
+    @Query('jobId') jobId: string,
+  ): Promise<YouTubeReport[]> {
+    this.logger.log(`Fetching reports for job: ${jobId}`);
+
+    if (!jobId) {
+      throw new BadRequestException('jobId query parameter is required');
+    }
+
+    const googleAccessToken = req.googleAccessToken;
+
+    if (!googleAccessToken) {
+      throw new UnauthorizedException(
+        'Google access token not found. Please re-authenticate.',
+      );
+    }
+
+    return this.youtubeService.listReports(googleAccessToken, jobId);
+  }
+
+  /**
+   * Download a specific report's data
+   * Requires valid Google OAuth token with YouTube scopes
+   *
+   * @param reportId - The YouTube report ID to download
+   * @returns Report data as CSV string
+   */
+  @Get('download-report')
+  async downloadReport(
+    @Req() req: AuthenticatedRequest,
+    @Query('reportId') reportId: string,
+    @Query('jobId') jobId: string,
+  ): Promise<{ data: string; filename: string }> {
+    this.logger.log(`Downloading report: ${reportId}`);
+
+    if (!reportId || !jobId) {
+      throw new BadRequestException(
+        'reportId and jobId query parameters are required',
+      );
+    }
+
+    const googleAccessToken = req.googleAccessToken;
+
+    if (!googleAccessToken) {
+      throw new UnauthorizedException(
+        'Google access token not found. Please re-authenticate.',
+      );
+    }
+
+    const data = await this.youtubeService.downloadReport(
+      googleAccessToken,
+      jobId,
+      reportId,
+    );
+
+    return {
+      data,
+      filename: `youtube_report_${reportId}.csv`,
+    };
   }
 }
