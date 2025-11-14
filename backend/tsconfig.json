@@ -25,9 +25,18 @@
     "forceConsistentCasingInFileNames": true,
     "noImplicitAny": false,
     "strictBindCallApply": false,
-    "noFallthroughCasesInSwitch": false
+    "noFallthroughCasesInSwitch": false,
+    "typeRoots": [
+      "./node_modules/@types",
+      "./src/types" // include custom type definitions
+    ]
   },
-  "include": ["src/**/*", "../common/**/*"],
+  "include": [
+    "src/**/*",
+    "src/types/**/*.d.ts", // Include type definition files
+    "../common/**/*",
+    "test/**/*" // include test files TODO: implement later
+  ],
   "exclude": [
     "../frontend",
     "node_modules",

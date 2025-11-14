@@ -22,10 +22,13 @@ export class OAuth2Controller {
 
   /**
    * Initiate Google OAuth flow with YouTube scopes
+   * Redirects user to Google's OAuth consent page
+   *
+   * @returns Object with redirect URL for NestJS @Redirect decorator
    */
   @Get('authorize')
   @Redirect()
-  authorize() {
+  authorize(): { url: string } {
     const url = this.oauth2Service.generateAuthUrl();
     this.logger.log('Redirecting to Google OAuth with YouTube scopes');
     return { url };
@@ -34,13 +37,18 @@ export class OAuth2Controller {
   /**
    * Handle Google OAuth callback
    * Exchanges code for tokens and creates Supabase session
+   *
+   * @param code - Authorization code from Google
+   * @param state - CSRF protection state parameter
+   * @param res - Express Response object for manual redirect
+   * @returns Promise that resolves when redirect is sent
    */
   @Get('callback')
   async callback(
     @Query('code') code: string,
     @Query('state') state: string,
     @Res() res: Response,
-  ) {
+  ): Promise<void> {
     // Get frontend URL from environment
     const frontendUrl =
       this.configService.get<string>('VITE_FRONTEND_URL') ||
@@ -88,15 +96,13 @@ export class OAuth2Controller {
       const redirectUrl = `${frontendUrl}/auth/callback?session_token=${sessionToken}&state=success`;
       this.logger.log(`Redirecting to frontend: ${redirectUrl}`);
 
-      return res.redirect(redirectUrl);
+      res.redirect(redirectUrl);
     } catch (error) {
       this.logger.error('OAuth callback error:', error);
 
       const errorMessage =
         error instanceof Error ? error.message : 'oauth_failed';
-      return res.redirect(
-        `${frontendUrl}/?error=${encodeURIComponent(errorMessage)}`,
-      );
+      res.redirect(`${frontendUrl}/?error=${encodeURIComponent(errorMessage)}`);
     }
   }
 }

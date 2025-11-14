@@ -8,7 +8,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { YouTubeService } from './youtube.service';
-import { YouTubeJob, YouTubeReportType } from '@common/youtube.interfaces';
+import { YouTubeJob, YouTubeReportType } from '@common/youtube.types';
 import { AuthenticatedRequest } from '../../middleware/interfaces/authenticated-request.interface';
 
 // Simple DTO type - no class needed

@@ -5,10 +5,11 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
-import type { YouTubeReportType, YouTubeJob } from '@common/youtube.interfaces';
+import type { YouTubeReportType, YouTubeJob } from '@common/youtube.types';
 import { lastValueFrom } from 'rxjs';
 import { SupabaseService } from '../supabase/supabase.service';
 import { AxiosResponse, AxiosError } from 'axios';
+import { isYouTubeApiErrorResponse } from '@src/types';
 
 /**
  * YouTube Reporting API response for report types
@@ -138,28 +139,72 @@ export class YouTubeService {
   /**
    * Handle YouTube API errors with proper logging and type checking
    * Private helper method to centralize error handling
+   *
+   * @param error - Unknown error object from catch block
+   * @param context - Context string for logging (e.g., "Failed to fetch report types")
+   * @throws UnauthorizedException for 401/403 errors
+   * @throws InternalServerErrorException for other errors
    */
   private handleYouTubeApiError(error: unknown, context: string): never {
+    // Handle Axios errors (HTTP errors from YouTube API)
     if (error instanceof AxiosError) {
       const status = error.response?.status;
-      const message = error.response?.data?.error?.message || error.message;
+      const responseData: unknown = error.response?.data;
 
-      this.logger.error(`${context}: ${message}`, error.stack);
+      // Default error values from Axios error
+      let message = error.message;
+      let errorCode: number | undefined = status;
+      let errorReason: string | undefined;
 
+      // Type guard narrows unknown to YouTubeApiErrorResponse
+      // After this check, TypeScript knows responseData.error is properly typed
+      if (isYouTubeApiErrorResponse(responseData)) {
+        // ✅ TypeScript now knows responseData is YouTubeApiErrorResponse
+        // ✅ responseData.error is YouTubeApiError (not 'any')
+        message = responseData.error.message ?? error.message;
+        errorCode = responseData.error.code ?? status;
+        errorReason = responseData.error.status;
+
+        // Log additional error details if available
+        if (
+          responseData.error.details &&
+          responseData.error.details.length > 0
+        ) {
+          const details = responseData.error.details[0];
+          this.logger.debug(
+            `Error details: ${JSON.stringify({
+              reason: details?.reason,
+              domain: details?.domain,
+              metadata: details?.metadata,
+            })}`,
+          );
+        }
+      }
+
+      // Log error with context and details
+      this.logger.error(
+        `${context}: [${errorCode}] ${message}${errorReason ? ` (${errorReason})` : ''}`,
+        error.stack,
+      );
+
+      // Handle authentication/authorization errors
       if (status === 401 || status === 403) {
         throw new UnauthorizedException(
           'YouTube API authentication failed. Please re-authenticate.',
         );
       }
 
+      // Handle other HTTP errors
       throw new InternalServerErrorException(`YouTube API error: ${message}`);
     }
 
+    // Handle standard JavaScript errors
     if (error instanceof Error) {
       this.logger.error(`${context}: ${error.message}`, error.stack);
       throw new InternalServerErrorException(error.message);
     }
 
+    // Handle unknown error types
     this.logger.error(`${context}: Unknown error`, error);
     throw new InternalServerErrorException('An unknown error occurred');
   }

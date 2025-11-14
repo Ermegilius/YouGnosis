@@ -1,13 +1,26 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseService } from '../supabase/supabase.service';
-import { TestTableRow } from './interfaces/test-data.interface';
+import type { TestTableRow } from './interfaces/test-data.interface';
 
+/**
+ * TestDataService
+ * ==============
+ * Service for fetching test data from Supabase.
+ * Used for development and testing purposes.
+ */
 @Injectable()
 export class TestDataService {
   private readonly logger = new Logger(TestDataService.name);
+
   constructor(private readonly supabaseService: SupabaseService) {}
 
-  async getTestData() {
+  /**
+   * Fetch all test data from the test_table
+   *
+   * @returns Promise resolving to array of test data rows
+   * @throws Error if Supabase query fails
+   */
+  async getTestData(): Promise<TestTableRow[]> {
     this.logger.log('Fetching test data from Supabase...');
 
     const supabase = this.supabaseService.getClient();

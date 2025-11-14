@@ -7,9 +7,25 @@ import {
 import { Request, Response, NextFunction } from 'express';
 import { SupabaseService } from '@src/modules/supabase/supabase.service';
 import { OAuth2Service } from '@src/modules/oauth2/oauth2.service';
-import { GoogleProviderMetadata } from '@common/youtube.interfaces';
-import { AuthenticatedRequest } from './interfaces/authenticated-request.interface';
+import { GoogleProviderMetadata, isGoogleProviderMetadata } from '@src/types';
 
+/**
+ * Authentication Middleware
+ * =========================
+ * Validates Supabase session tokens and manages Google OAuth tokens.
+ *
+ * Workflow:
+ * 1. Extract Supabase token from Authorization header
+ * 2. Verify token with Supabase
+ * 3. Extract Google OAuth tokens from user metadata
+ * 4. Auto-refresh Google token if expiring within 5 minutes
+ * 5. Attach user info and tokens to request object
+ *
+ * Protected routes can access:
+ * - req.user (authenticated user info)
+ * - req.googleAccessToken (for YouTube API calls)
+ * - req.googleRefreshToken (for token refresh)
+ */
 @Injectable()
 export class AuthMiddleware implements NestMiddleware {
   private readonly logger = new Logger(AuthMiddleware.name);
@@ -19,9 +35,11 @@ export class AuthMiddleware implements NestMiddleware {
     private readonly oauth2Service: OAuth2Service,
   ) {}
 
-  async use(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+  async use(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      // Extract token from Authorization header
+      // ========================
+      // 1. Extract and verify Supabase token
+      // ========================
       const authHeader = req.headers.authorization;
       if (!authHeader) {
         throw new UnauthorizedException('No authorization header');
@@ -29,7 +47,6 @@ export class AuthMiddleware implements NestMiddleware {
 
       const token = authHeader.replace('Bearer ', '');
 
-      // Verify token with Supabase
       const supabase = this.supabaseService.getClient();
       const {
         data: { user },
@@ -41,40 +58,49 @@ export class AuthMiddleware implements NestMiddleware {
         throw new UnauthorizedException('Invalid token');
       }
 
-      // Attach user info with proper typing
+      // ========================
+      // 2. Attach user info to request
+      // ========================
       req.user = {
         id: user.id,
         email: user.email ?? '',
       };
 
-      // Extract Google tokens - simplified without type guard
-      const metadata = user.user_metadata as Partial<GoogleProviderMetadata>;
+      // ========================
+      // 3. Extract Google OAuth metadata
+      // ========================
+      const metadata = user.user_metadata;
 
-      // Check if we have valid Google OAuth data
-      if (!metadata?.provider_token || !metadata?.provider_token_expires_at) {
-        this.logger.debug('No valid Google provider metadata found');
+      // Use type guard to safely check metadata
+      if (!isGoogleProviderMetadata(metadata)) {
+        this.logger.debug('No valid Google provider metadata found for user');
         next();
         return;
       }
 
-      // Extract Google tokens
+      // TypeScript now knows metadata is GoogleProviderMetadata
       let googleAccessToken = metadata.provider_token;
       const googleRefreshToken = metadata.provider_refresh_token;
       const tokenExpiresAt = metadata.provider_token_expires_at;
 
-      // Check if token needs refresh (5 minutes buffer)
-      if (googleAccessToken && tokenExpiresAt && googleRefreshToken) {
+      // ========================
+      // 4. Auto-refresh token if needed
+      // ========================
+      if (googleRefreshToken && tokenExpiresAt) {
         const now = Date.now();
-        const bufferTime = 5 * 60 * 1000; // 5 minutes
+        const bufferTime = 5 * 60 * 1000; // 5 minutes in milliseconds
 
+        // Check if token expires within buffer time
         if (tokenExpiresAt - now < bufferTime) {
-          this.logger.log('🔄 Token expiring soon, refreshing...');
+          this.logger.log(
+            `🔄 Token expires in ${Math.round((tokenExpiresAt - now) / 1000)}s, refreshing...`,
+          );
 
           try {
             const newTokens =
               await this.oauth2Service.refreshAccessToken(googleRefreshToken);
 
-            // Update user metadata with new tokens
+            // Create updated metadata with new tokens
             const updatedMetadata: GoogleProviderMetadata = {
               ...metadata,
               provider_token: newTokens.access_token,
@@ -82,8 +108,9 @@ export class AuthMiddleware implements NestMiddleware {
                 newTokens.refresh_token || googleRefreshToken,
               provider_token_expires_at:
                 Date.now() + newTokens.expires_in * 1000,
-            } as GoogleProviderMetadata;
+            };
 
+            // Update Supabase user metadata with new tokens
             const supabaseAdmin = this.supabaseService.getAdminClient();
             await supabaseAdmin.auth.admin.updateUserById(user.id, {
               user_metadata: updatedMetadata,
@@ -93,12 +120,14 @@ export class AuthMiddleware implements NestMiddleware {
             this.logger.log('✅ Token refreshed and updated in Supabase');
           } catch (refreshError) {
             this.logger.error('Failed to refresh token:', refreshError);
-            // Continue with expired token - will fail at API call
+            // Continue with current token - will fail at API call if expired
           }
         }
       }
 
-      // Attach tokens to request
+      // ========================
+      // 5. Attach tokens to request
+      // ========================
       req.googleAccessToken = googleAccessToken;
       req.googleRefreshToken = googleRefreshToken;
 

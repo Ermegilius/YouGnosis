@@ -11,13 +11,31 @@ import {
   GoogleProviderMetadata,
   GoogleTokensResponse,
   GoogleUserInfoResponse,
-} from '@common/youtube.interfaces';
+} from '@src/types';
 import { lastValueFrom } from 'rxjs';
-import { AxiosResponse } from 'axios';
+import type { AxiosResponse, AxiosError } from 'axios';
+import type { User } from '@supabase/supabase-js';
 
+/**
+ * OAuth2 Service
+ * ==============
+ * Handles Google OAuth2 authentication flow with YouTube scopes.
+ *
+ * Flow:
+ * 1. Generate authorization URL → User clicks "Sign in with Google"
+ * 2. User authorizes on Google → Google redirects back with code
+ * 3. Exchange code for tokens → Access token + refresh token
+ * 4. Fetch user info from Google
+ * 5. Create/update Supabase user with tokens
+ * 6. Generate session token for frontend
+ *
+ * @see https://developers.google.com/identity/protocols/oauth2
+ */
 @Injectable()
 export class OAuth2Service {
   private readonly logger = new Logger(OAuth2Service.name);
+
+  // Google OAuth endpoints
   private readonly googleOAuthUrl =
     'https://accounts.google.com/o/oauth2/v2/auth';
   private readonly tokenUrl = 'https://oauth2.googleapis.com/token';
@@ -31,7 +49,10 @@ export class OAuth2Service {
   ) {}
 
   /**
-   * Generate Google OAuth2 authorization URL with YouTube scopes
+   * Generate Google OAuth2 authorization URL
+   * User will be redirected to this URL to grant permissions
+   *
+   * @returns Authorization URL with required YouTube scopes
    */
   generateAuthUrl(): string {
     const clientId = this.configService.getOrThrow<string>(
@@ -39,13 +60,14 @@ export class OAuth2Service {
     );
     const redirectUri = `${this.configService.getOrThrow<string>('VITE_API_URL')}/oauth2/google/callback`;
 
+    // Request YouTube Analytics and Reporting API scopes
     const scopes = [
-      'openid',
-      'email',
-      'profile',
-      'https://www.googleapis.com/auth/youtube.readonly',
-      'https://www.googleapis.com/auth/yt-analytics.readonly',
-      'https://www.googleapis.com/auth/yt-analytics-monetary.readonly',
+      'openid', // Required for user ID
+      'email', // Required for user email
+      'profile', // Required for user name/picture
+      'https://www.googleapis.com/auth/youtube.readonly', // Read YouTube data
+      'https://www.googleapis.com/auth/yt-analytics.readonly', // Read analytics
+      'https://www.googleapis.com/auth/yt-analytics-monetary.readonly', // Read revenue
     ].join(' ');
 
     const params = new URLSearchParams({
@@ -53,8 +75,8 @@ export class OAuth2Service {
       redirect_uri: redirectUri,
       response_type: 'code',
       scope: scopes,
-      access_type: 'offline',
-      prompt: 'consent',
+      access_type: 'offline', // Request refresh token
+      prompt: 'consent', // Force consent screen to get refresh token
       state: this.generateState(),
     });
 
@@ -62,7 +84,11 @@ export class OAuth2Service {
   }
 
   /**
-   * Exchange authorization code for Google access and refresh tokens
+   * Exchange authorization code for access and refresh tokens
+   *
+   * @param code - Authorization code from Google OAuth callback
+   * @returns Google tokens (access token, refresh token, expiration)
+   * @throws UnauthorizedException if exchange fails
    */
   async exchangeCodeForTokens(code: string): Promise<GoogleTokensResponse> {
     const clientId = this.configService.getOrThrow<string>(
@@ -92,18 +118,67 @@ export class OAuth2Service {
         ),
       );
 
-      this.logger.log('Token exchange successful');
-      this.logger.debug(`Scopes granted: ${response.data.scope}`);
+      this.logger.log('✅ Token exchange successful');
+      this.logger.debug(`Scopes granted: ${response.data.scope ?? 'N/A'}`);
 
       return response.data;
     } catch (error) {
-      this.logger.error('Token exchange failed:', error);
+      const axiosError = error as AxiosError;
+      this.logger.error('Token exchange failed:', axiosError.response?.data);
       throw new UnauthorizedException('Failed to exchange authorization code');
     }
   }
 
   /**
-   * Get user info from Google using access token
+   * Refresh expired Google access token using refresh token
+   *
+   * @param refreshToken - Google refresh token
+   * @returns New tokens (access token, optional new refresh token, expiration)
+   * @throws UnauthorizedException if refresh fails
+   */
+  async refreshAccessToken(
+    refreshToken: string,
+  ): Promise<GoogleTokensResponse> {
+    const clientId = this.configService.getOrThrow<string>(
+      'GOOGLE_OAUTH_CLIENT_ID',
+    );
+    const clientSecret = this.configService.getOrThrow<string>(
+      'GOOGLE_OAUTH_CLIENT_SECRET',
+    );
+
+    try {
+      const response: AxiosResponse<GoogleTokensResponse> = await lastValueFrom(
+        this.httpService.post<GoogleTokensResponse>(
+          this.tokenUrl,
+          new URLSearchParams({
+            refresh_token: refreshToken,
+            client_id: clientId,
+            client_secret: clientSecret,
+            grant_type: 'refresh_token',
+          }).toString(),
+          {
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+            },
+          },
+        ),
+      );
+
+      this.logger.log('✅ Access token refreshed successfully');
+      return response.data;
+    } catch (error) {
+      const axiosError = error as AxiosError;
+      this.logger.error('Token refresh failed:', axiosError.response?.data);
+      throw new UnauthorizedException('Failed to refresh access token');
+    }
+  }
+
+  /**
+   * Fetch user profile information from Google
+   *
+   * @param accessToken - Google access token
+   * @returns User profile (email, name, picture, etc.)
+   * @throws InternalServerErrorException if request fails
    */
   async getUserInfo(accessToken: string): Promise<GoogleUserInfoResponse> {
     try {
@@ -118,7 +193,11 @@ export class OAuth2Service {
 
       return response.data;
     } catch (error) {
-      this.logger.error('Failed to fetch user info:', error);
+      const axiosError = error as AxiosError;
+      this.logger.error(
+        'Failed to fetch user info:',
+        axiosError.response?.data,
+      );
       throw new InternalServerErrorException(
         'Failed to fetch user information',
       );
@@ -126,17 +205,22 @@ export class OAuth2Service {
   }
 
   /**
-   * Create or update Supabase user with Google tokens
-   * Uses email lookup instead of Google user ID (which is not a UUID)
+   * Create or update Supabase user with Google OAuth tokens
+   * Stores tokens in user_metadata for later use by AuthMiddleware
+   *
+   * @param userInfo - Google user profile
+   * @param tokens - Google OAuth tokens
+   * @returns Supabase user object
+   * @throws InternalServerErrorException if Supabase operation fails
    */
   async createOrUpdateSupabaseUser(
     userInfo: GoogleUserInfoResponse,
     tokens: GoogleTokensResponse,
-  ) {
+  ): Promise<User> {
     const supabase = this.supabaseService.getAdminClient();
 
     try {
-      // Look up user by email
+      // Look up user by email (Google user ID is not a UUID)
       const { data: existingUsers, error: lookupError } =
         await supabase.auth.admin.listUsers();
 
@@ -144,7 +228,6 @@ export class OAuth2Service {
         throw lookupError;
       }
 
-      // Find user with matching email
       const existingUser = existingUsers.users.find(
         (user) => user.email === userInfo.email,
       );
@@ -156,14 +239,14 @@ export class OAuth2Service {
         provider_token: tokens.access_token,
         provider_refresh_token: tokens.refresh_token,
         provider_token_expires_at: Date.now() + tokens.expires_in * 1000,
-        provider_scopes: tokens.scope || '',
+        provider_scopes: tokens.scope ?? '',
         name: userInfo.name,
         given_name: userInfo.given_name,
         picture: userInfo.picture,
       };
 
       if (existingUser) {
-        // Update existing user with new tokens
+        // Update existing user
         this.logger.log(`Updating existing user: ${userInfo.email}`);
 
         const { data, error } = await supabase.auth.admin.updateUserById(
@@ -207,14 +290,19 @@ export class OAuth2Service {
   }
 
   /**
-   * Generate a session token for the user using email
-   * This creates a magic link that the frontend can use to establish a session
+   * Generate a session token for the user
+   * Creates a Supabase magic link and extracts the token
+   * Frontend uses this token to establish a session
+   *
+   * @param userId - Supabase user ID
+   * @param email - User email
+   * @returns Session token for frontend
+   * @throws InternalServerErrorException if token generation fails
    */
   async generateSessionToken(userId: string, email: string): Promise<string> {
     const supabase = this.supabaseService.getAdminClient();
 
     try {
-      // Generate a magic link for the user
       const { data, error } = await supabase.auth.admin.generateLink({
         type: 'magiclink',
         email: email,
@@ -228,7 +316,7 @@ export class OAuth2Service {
         throw error;
       }
 
-      // Extract token from the magic link
+      // Extract token from magic link URL
       // Format: https://project.supabase.co/auth/v1/verify?token=TOKEN&type=magiclink
       const url = new URL(data.properties.action_link);
       const token = url.searchParams.get('token');
@@ -248,46 +336,11 @@ export class OAuth2Service {
   }
 
   /**
-   * Refresh Google access token using refresh token
-   */
-  async refreshAccessToken(
-    refreshToken: string,
-  ): Promise<GoogleTokensResponse> {
-    const clientId = this.configService.getOrThrow<string>(
-      'GOOGLE_OAUTH_CLIENT_ID',
-    );
-    const clientSecret = this.configService.getOrThrow<string>(
-      'GOOGLE_OAUTH_CLIENT_SECRET',
-    );
-
-    try {
-      const response: AxiosResponse<GoogleTokensResponse> = await lastValueFrom(
-        this.httpService.post<GoogleTokensResponse>(
-          this.tokenUrl,
-          new URLSearchParams({
-            refresh_token: refreshToken,
-            client_id: clientId,
-            client_secret: clientSecret,
-            grant_type: 'refresh_token',
-          }).toString(),
-          {
-            headers: {
-              'Content-Type': 'application/x-www-form-urlencoded',
-            },
-          },
-        ),
-      );
-
-      this.logger.log('✅ Access token refreshed successfully');
-      return response.data;
-    } catch (error) {
-      this.logger.error('Failed to refresh access token:', error);
-      throw new UnauthorizedException('Failed to refresh access token');
-    }
-  }
-
-  /**
    * Generate CSRF protection state parameter
+   * State parameter prevents CSRF attacks in OAuth flow
+   *
+   * @returns Base64-encoded state with timestamp and random value
+   * @private
    */
   private generateState(): string {
     return Buffer.from(
