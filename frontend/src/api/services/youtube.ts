@@ -10,6 +10,8 @@ import type {
  * Uses Supabase token for authentication to your backend.
  * Backend will handle fetching Google token and calling YouTube API.
  * @returns {Promise<YouTubeReportType[]>} - List of report types.
+ * @throws {ApiError} - Standardized error format
+
  */
 export const reportTypesApi = async (): Promise<YouTubeReportType[]> => {
   const response = await api.get<YouTubeReportType[]>("/youtube/report-types");
@@ -19,6 +21,8 @@ export const reportTypesApi = async (): Promise<YouTubeReportType[]> => {
 /**
  * Fetch all existing YouTube reporting jobs for the authenticated user
  * Requires valid Google OAuth token with YouTube scopes
+ * @throws {ApiError} - Standardized error format
+
  */
 export const reportingJobsApi = async (): Promise<YouTubeJob[]> => {
   const response = await api.get<YouTubeJob[]>("/youtube/jobs");
@@ -28,10 +32,10 @@ export const reportingJobsApi = async (): Promise<YouTubeJob[]> => {
 /**
  * Create a new YouTube reporting job
  * Requires valid Google OAuth token with YouTube scopes
- *
  * @param reportTypeId - YouTube report type ID (e.g., "channel_basic_a2")
  * @param name - Human-readable name for the job (e.g., "My Channel Analytics")
  * @returns {Promise<YouTubeJob>} - Created job details
+ * @throws {ApiError} - Standardized error format
  */
 export const createReportingJobApi = async (
   reportTypeId: string,
@@ -47,6 +51,7 @@ export const createReportingJobApi = async (
 /** List all available reports for a specific job
  * @param jobId - YouTube job ID to fetch reports for
  * @returns {Promise<YouTubeReport[]>} - Array of available reports with download URLs
+ * @throws {ApiError} - Standardized error format
  */
 export const listReportsApi = async (
   jobId: string,
@@ -63,6 +68,7 @@ export const listReportsApi = async (
  *
  * @param reportId - The YouTube report ID to download
  * @returns Report data as CSV string
+ * @throws {ApiError} - Standardized error format
  */
 export const downloadReportApi = async (
   reportId: string,

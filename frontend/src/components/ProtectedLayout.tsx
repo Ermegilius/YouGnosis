@@ -15,6 +15,7 @@ export function ProtectedLayout(): ReactNode {
       subMenu: [
         { title: "Overview", path: "/analytics/overview" },
         { title: "Report Types", path: "/analytics/report-types" },
+        { title: "YouTube Jobs", path: "/analytics/youtube-jobs" },
       ],
     },
     { title: "Competitors", path: "/competitors" },

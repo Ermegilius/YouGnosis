@@ -1,6 +1,7 @@
 import axios from "axios";
 import { supabase } from "../supabase/supabase";
 import type { AxiosResponse } from "axios";
+import { handleApiError } from "@src/utils/handleApiError";
 
 // Cache token to avoid unnecessary async calls
 let cachedToken: string | null = null;
@@ -69,9 +70,8 @@ api.interceptors.request.use(
   },
   (error) => {
     console.error("Request error:", error);
-    return Promise.reject(
-      error instanceof Error ? error : new Error(String(error)),
-    );
+    // Return normalized error
+    return Promise.reject(handleApiError(error));
   },
 );
 
@@ -81,7 +81,7 @@ api.interceptors.response.use(
   (response: AxiosResponse) => {
     return response;
   },
-  // Error handler
+  // Error handler - normalize all errors to ApiError
   async (error) => {
     const originalRequest = error.config;
 
@@ -100,6 +100,24 @@ api.interceptors.response.use(
         console.error("Session refresh failed:", refreshError);
         // Redirect to login
         window.location.href = "/";
+        // Return normalized error instead of throwing
+        return Promise.reject(handleApiError(error));
+      }
+    }
+
+    // Retry logic for 5xx server errors (max 2 retries)
+    if (error.response?.status >= 500 && error.response?.status < 600) {
+      originalRequest._retryCount = (originalRequest._retryCount || 0) + 1;
+
+      if (originalRequest._retryCount <= 2) {
+        console.warn(
+          `Retrying request (attempt ${originalRequest._retryCount})...`,
+        );
+        // Exponential backoff: 1s, 2s
+        await new Promise((resolve) =>
+          setTimeout(resolve, originalRequest._retryCount * 1000),
+        );
+        return api(originalRequest);
       }
     }
 
@@ -110,8 +128,7 @@ api.interceptors.response.use(
       url: error.config?.url,
     });
 
-    return Promise.reject(
-      error instanceof Error ? error : new Error(String(error)),
-    );
+    // Always return normalized ApiError (handleApiError converts axios errors)
+    return Promise.reject(handleApiError(error));
   },
 );

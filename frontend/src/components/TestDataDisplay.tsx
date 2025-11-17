@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@src/hooks/useAuth";
 import type { ReactNode } from "react";
-import Accordion from "@src/components/ui/accordion";
+import { Accordion } from "@src/components/ui";
 
 interface TestData {
   message: string;

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@src/supabase/supabase";
-import { LoadingSpinner } from "@src/components/LoadingSpinner";
+import { LoadingSpinner } from "@src/components/ui";
 import type { ReactNode } from "react";
 
 /**
