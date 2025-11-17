@@ -45,3 +45,6 @@ export type {
 
 // Backend-specific types
 export type { Database } from '@common/supabase.types';
+
+// Authenticated request with user info
+export type { AuthenticatedRequest } from '@src/middleware/interfaces/authenticated-request.interface';

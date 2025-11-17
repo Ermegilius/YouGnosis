@@ -14,11 +14,9 @@ import {
   YouTubeJob,
   YouTubeReportType,
   YouTubeReport,
-} from '@common/youtube.types';
-import { AuthenticatedRequest } from '../../middleware/interfaces/authenticated-request.interface';
-
-// Simple DTO type - no class needed
-type CreateJobDto = Pick<YouTubeJob, 'reportTypeId' | 'name'>;
+  AuthenticatedRequest,
+  CreateJobRequest,
+} from '@src/types/index';
 
 @Controller('youtube')
 export class YouTubeController {
@@ -71,11 +69,13 @@ export class YouTubeController {
   /**
    * Create a new YouTube reporting job
    * Requires valid Google OAuth token with YouTube scopes
+   * @param createJobDto - DTO containing reportTypeId and name
+   * @returns Created YouTubeJob
    */
   @Post('create-job')
   async createReportingJob(
     @Req() req: AuthenticatedRequest,
-    @Body() createJobDto: CreateJobDto,
+    @Body() createJobDto: CreateJobRequest,
   ): Promise<YouTubeJob> {
     this.logger.log('Creating a new YouTube Reporting job...');
 
@@ -106,7 +106,7 @@ export class YouTubeController {
    * Requires valid Google OAuth token with YouTube scopes
    *
    * @param jobId - The YouTube job ID to fetch reports for
-   * @returns Array of available reports with download URLs
+   * @returns {Promise<YouTubeReport[]>} - List of reports for the job
    */
   @Get('reports')
   async listReports(
@@ -135,6 +135,7 @@ export class YouTubeController {
    * Requires valid Google OAuth token with YouTube scopes
    *
    * @param reportId - The YouTube report ID to download
+   * @param jobId - The YouTube job ID the report belongs to
    * @returns Report data as CSV string
    */
   @Get('download-report')

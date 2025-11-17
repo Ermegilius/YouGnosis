@@ -8,6 +8,7 @@
 export type {
   YouTubeReportType,
   YouTubeJob,
+  YouTubeReport,
   GoogleProviderMetadata,
   YouTubeApiErrorResponse,
   YouTubeApiError,
