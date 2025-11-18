@@ -1,17 +1,42 @@
-import { useState, type ReactNode } from "react";
+import { useState, type ReactNode, Children } from "react";
 
 interface AccordionProps {
   title: string;
   children: ReactNode;
   defaultOpen?: boolean;
+  itemsPerPage?: number;
 }
 
 export function Accordion({
   title,
   children,
   defaultOpen = false,
+  itemsPerPage = 10, // Default to 10 items per page
 }: AccordionProps): ReactNode {
   const [isOpen, setIsOpen] = useState(defaultOpen);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Ensure children is an array of React nodes
+  const childrenArray = Children.toArray(children);
+
+  // Calculate pagination
+  const totalPages = Math.ceil(childrenArray.length / itemsPerPage);
+  const paginatedChildren = childrenArray.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage,
+  );
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage((prev) => prev + 1);
+    }
+  };
+
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage((prev) => prev - 1);
+    }
+  };
 
   return (
     <div className="rounded-lg border border-gray-200 dark:border-gray-700">
@@ -45,7 +70,31 @@ export function Accordion({
           isOpen ? "max-h-screen" : "max-h-0"
         }`}
       >
-        <div className="bg-white px-4 py-2 dark:bg-gray-900">{children}</div>
+        <div className="bg-white px-4 py-2 dark:bg-gray-900">
+          {/* Render paginated children */}
+          {paginatedChildren}
+
+          {/* Pagination Controls */}
+          <div className="mt-4 flex justify-between">
+            <button
+              onClick={handlePreviousPage}
+              disabled={currentPage === 1}
+              className="rounded bg-gray-200 px-3 py-1 text-sm text-gray-700 hover:bg-gray-300 disabled:opacity-50 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+            >
+              Previous
+            </button>
+            <span className="text-sm text-gray-600 dark:text-gray-400">
+              Page {currentPage} of {totalPages}
+            </span>
+            <button
+              onClick={handleNextPage}
+              disabled={currentPage === totalPages}
+              className="rounded bg-gray-200 px-3 py-1 text-sm text-gray-700 hover:bg-gray-300 disabled:opacity-50 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+            >
+              Next
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );

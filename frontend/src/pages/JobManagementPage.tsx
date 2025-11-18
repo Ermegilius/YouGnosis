@@ -128,7 +128,12 @@ export default function YouTubeJobs(): ReactNode {
       setSelectedJobId(jobId);
 
       const data = await listReportsApi(jobId);
-      setReports(data);
+      const sortedReports = data.sort(
+        (a, b) =>
+          new Date(b.startTime).getTime() - new Date(a.startTime).getTime(),
+      );
+
+      setReports(sortedReports);
     } catch (err) {
       const apiError = err as ApiError;
       console.error("Failed to fetch reports:", apiError);
@@ -296,45 +301,43 @@ export default function YouTubeJobs(): ReactNode {
                         periodically by YouTube.
                       </p>
                     ) : (
-                      <Accordion title="Available Reports">
-                        <div className="space-y-2">
-                          {reports.map((report) => (
-                            <div
-                              key={report.id}
-                              className="flex items-center justify-between rounded bg-gray-50 p-3 dark:bg-gray-800"
-                            >
-                              <div className="text-sm">
-                                <p className="font-medium text-gray-900 dark:text-white">
-                                  {new Date(
-                                    report.startTime,
-                                  ).toLocaleDateString("de-DE")}{" "}
-                                  -{" "}
-                                  {new Date(report.endTime).toLocaleDateString(
-                                    "de-DE",
-                                  )}
-                                </p>
-                                <p className="text-gray-600 dark:text-gray-400">
-                                  Created:{" "}
-                                  {new Date(
-                                    report.createTime,
-                                  ).toLocaleDateString("de-DE")}
-                                </p>
-                              </div>
-                              <Button
-                                onClick={() =>
-                                  handleDownloadReport(report.id, job.id)
-                                }
-                                disabled={downloading === report.id}
-                                variant="primary"
-                                size="sm"
-                              >
-                                {downloading === report.id
-                                  ? "Downloading..."
-                                  : "Download CSV"}
-                              </Button>
+                      <Accordion title="Available Reports" itemsPerPage={10}>
+                        {reports.map((report) => (
+                          <div
+                            key={report.id}
+                            className="flex items-center justify-between rounded bg-gray-50 p-3 dark:bg-gray-800"
+                          >
+                            <div className="text-sm">
+                              <p className="font-medium text-gray-900 dark:text-white">
+                                {new Date(report.startTime).toLocaleDateString(
+                                  "de-DE",
+                                )}{" "}
+                                -{" "}
+                                {new Date(report.endTime).toLocaleDateString(
+                                  "de-DE",
+                                )}
+                              </p>
+                              <p className="text-gray-600 dark:text-gray-400">
+                                Created:{" "}
+                                {new Date(report.createTime).toLocaleDateString(
+                                  "de-DE",
+                                )}
+                              </p>
                             </div>
-                          ))}
-                        </div>
+                            <Button
+                              onClick={() =>
+                                handleDownloadReport(report.id, selectedJobId!)
+                              }
+                              disabled={downloading === report.id}
+                              variant="primary"
+                              size="sm"
+                            >
+                              {downloading === report.id
+                                ? "Downloading..."
+                                : "Download CSV"}
+                            </Button>
+                          </div>
+                        ))}
                       </Accordion>
                     )}
                   </div>
