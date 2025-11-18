@@ -13,7 +13,13 @@ import {
   type YouTubeReport,
   type ApiError,
 } from "@src/types/index";
-import { Accordion, Button, Card, ErrorMessage, LoadingSpinner } from "@src/components/ui";
+import {
+  Accordion,
+  Button,
+  Card,
+  ErrorMessage,
+  LoadingSpinner,
+} from "@src/components/ui";
 
 /**
  * YouTubeJobs - Manage YouTube Reporting API jobs
@@ -275,7 +281,8 @@ export default function YouTubeJobs(): ReactNode {
                   Report Type: {job.reportTypeId}
                 </p>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Created: {new Date(job.createTime).toLocaleDateString()}
+                  Created:{" "}
+                  {new Date(job.createTime).toLocaleDateString("de-DE")}
                 </p>
 
                 {/* Reports List for Selected Job */}
@@ -300,17 +307,17 @@ export default function YouTubeJobs(): ReactNode {
                                 <p className="font-medium text-gray-900 dark:text-white">
                                   {new Date(
                                     report.startTime,
-                                  ).toLocaleDateString()}{" "}
+                                  ).toLocaleDateString("de-DE")}{" "}
                                   -{" "}
-                                  {new Date(
-                                    report.endTime,
-                                  ).toLocaleDateString()}
+                                  {new Date(report.endTime).toLocaleDateString(
+                                    "de-DE",
+                                  )}
                                 </p>
                                 <p className="text-gray-600 dark:text-gray-400">
                                   Created:{" "}
                                   {new Date(
                                     report.createTime,
-                                  ).toLocaleDateString()}
+                                  ).toLocaleDateString("de-DE")}
                                 </p>
                               </div>
                               <Button
