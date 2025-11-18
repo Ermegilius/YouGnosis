@@ -8,9 +8,11 @@ import { TestDataModule } from '@src/modules/test-data/test-data.module';
 import { YouTubeModule } from '@src/modules/youtube/youtube.module';
 import { OAuth2Module } from '@src/modules/oauth2/oauth2.module';
 import { AuthMiddleware } from '@src/middleware/Auth.middleware';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
     // Load environment variables with validation
     ConfigModule.forRoot({
       isGlobal: true,

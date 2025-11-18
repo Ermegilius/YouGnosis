@@ -6,6 +6,7 @@ import {
   Post,
   Query,
   Req,
+  Param,
   UnauthorizedException,
   BadRequestException,
 } from '@nestjs/common';
@@ -170,5 +171,26 @@ export class YouTubeController {
       data,
       filename: `youtube_report_${reportId}.csv`,
     };
+  }
+
+  /**
+   * Manually refresh metadata for a specific job
+   */
+  @Post('jobs/:jobId/refresh-metadata')
+  async refreshMetadata(
+    @Param('jobId') jobId: string,
+    @Req() req: AuthenticatedRequest,
+  ): Promise<{ message: string }> {
+    const googleAccessToken = req.googleAccessToken;
+
+    if (!googleAccessToken) {
+      throw new UnauthorizedException(
+        'No Google access token found. Please re-authenticate.',
+      );
+    }
+
+    await this.youtubeService.refreshJobMetadata(jobId, googleAccessToken);
+
+    return { message: `Metadata for job ${jobId} refreshed successfully` };
   }
 }

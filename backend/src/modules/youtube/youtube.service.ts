@@ -13,7 +13,11 @@ import type {
 import { lastValueFrom } from 'rxjs';
 import { SupabaseService } from '../supabase/supabase.service';
 import { AxiosResponse, AxiosError } from 'axios';
-import { isYouTubeApiErrorResponse } from '@src/types';
+import {
+  isGoogleProviderMetadata,
+  isYouTubeApiErrorResponse,
+} from '@src/types';
+import { Cron } from '@nestjs/schedule';
 
 /**
  * YouTube Reporting API response for report types
@@ -277,6 +281,134 @@ export class YouTubeService {
       return dataResponse.data;
     } catch (error: unknown) {
       this.handleYouTubeApiError(error, 'Failed to download report');
+    }
+  }
+
+  /**
+   * Refresh metadata for a YouTube job
+   * Ensures compliance with YouTube API Services Developer Policies
+   *
+   * @param jobId - YouTube job ID
+   * @param googleAccessToken - Google OAuth access token
+   */
+  async refreshJobMetadata(
+    jobId: string,
+    googleAccessToken: string,
+  ): Promise<void> {
+    if (!googleAccessToken) {
+      throw new UnauthorizedException(
+        'No Google access token found. Please re-authenticate.',
+      );
+    }
+
+    try {
+      const url = `${this.baseUrl}/jobs/${jobId}`;
+      const headers = {
+        Authorization: `Bearer ${googleAccessToken}`,
+      };
+
+      this.logger.debug(`Refreshing metadata for job: ${jobId}`);
+
+      const response: AxiosResponse<YouTubeJob> = await lastValueFrom(
+        this.httpService.get<YouTubeJob>(url, { headers }),
+      );
+
+      const job = response.data;
+
+      // Update the job metadata in the database
+      const supabase = this.supabaseService.getClient();
+      const { error } = await supabase
+        .from('youtube_jobs')
+        .update({
+          name: job.name,
+          report_type_id: job.reportTypeId,
+          create_time: job.createTime,
+          last_refreshed: new Date().toISOString(),
+        })
+        .eq('job_id', jobId);
+
+      if (error) {
+        this.logger.error(
+          'Failed to update job metadata in database',
+          error.message,
+        );
+        throw new InternalServerErrorException(
+          'Failed to update job metadata in database',
+        );
+      }
+
+      this.logger.log(`Successfully refreshed metadata for job: ${jobId}`);
+    } catch (error: unknown) {
+      this.handleYouTubeApiError(
+        error,
+        `Failed to refresh metadata for job: ${jobId}`,
+      );
+    }
+  }
+
+  /**
+   * Scheduled task to refresh metadata for all jobs older than 30 days
+   */
+  @Cron('0 0 * * *') // Runs daily at midnight
+  async refreshAllJobMetadata(): Promise<void> {
+    this.logger.log('Running scheduled metadata refresh for all jobs');
+
+    try {
+      const supabase = this.supabaseService.getClient();
+      const { data: jobs, error } = await supabase
+        .from('youtube_jobs')
+        .select('job_id, user_id, last_refreshed')
+        .lte(
+          'last_refreshed',
+          new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+        );
+
+      if (error) {
+        this.logger.error(
+          'Failed to fetch jobs for metadata refresh',
+          error.message,
+        );
+        throw new InternalServerErrorException(
+          'Failed to fetch jobs for metadata refresh',
+        );
+      }
+
+      if (!jobs || jobs.length === 0) {
+        this.logger.log('No jobs require metadata refresh');
+        return;
+      }
+
+      for (const job of jobs) {
+        const { job_id, user_id } = job;
+
+        // Fetch the user's Google access token
+        const user = await supabase.auth.admin.getUserById(user_id);
+        const metadata = user?.data?.user?.user_metadata;
+
+        // Validate metadata using the type guard
+        if (!isGoogleProviderMetadata(metadata)) {
+          this.logger.warn(
+            `Skipping job ${job_id}: No valid Google access token found`,
+          );
+          continue;
+        }
+
+        await this.refreshJobMetadata(job_id, metadata.provider_token);
+      }
+
+      this.logger.log('Completed scheduled metadata refresh for all jobs');
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        this.logger.error(
+          'Error during scheduled metadata refresh',
+          error.message,
+        );
+      } else {
+        this.logger.error(
+          'Unknown error during scheduled metadata refresh',
+          error,
+        );
+      }
     }
   }
 
