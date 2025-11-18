@@ -47,6 +47,8 @@ export class AuthMiddleware implements NestMiddleware {
 
       const token = authHeader.replace('Bearer ', '');
 
+      this.logger.log(token);
+
       const supabase = this.supabaseService.getClient();
       const {
         data: { user },

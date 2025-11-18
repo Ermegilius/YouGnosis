@@ -39,6 +39,7 @@ export interface OAuthCallbackQuery {
 
 /**
  * Request body for creating a YouTube reporting job
+* This is the DTO for the POST /youtube/create-job endpoint
  */
 export interface CreateJobRequest {
   reportTypeId: string;

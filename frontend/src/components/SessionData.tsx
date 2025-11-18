@@ -1,5 +1,5 @@
 import { useAuth } from "@src/hooks/useAuth";
-import Accordion from "@src/components/ui/accordion";
+import { Accordion } from "@src/components/ui";
 import { type ReactNode } from "react";
 
 export default function SessionData(): ReactNode {

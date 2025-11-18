@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { reportTypesApi } from "@src/api/services/youtube";
-import { LoadingSpinner } from "@src/components/LoadingSpinner";
-import type { YouTubeReportType } from "@common/youtube.interfaces";
+import { LoadingSpinner } from "@src/components/ui";
+import type { ApiError, YouTubeReportType } from "@src/types/index";
 import type { ReactNode } from "react";
+import { ErrorMessage } from "@src/components/ui/ErrorMessage";
 
 /**
  * ReportTypes - Displays a list of available report types.
@@ -19,8 +20,9 @@ export default function ReportTypes(): ReactNode {
         const data = await reportTypesApi();
         setReportTypes(data);
       } catch (err) {
-        setError("Failed to fetch report types. Please try again later.");
-        console.error(err);
+        const apiError = err as ApiError;
+        setError(apiError.message);
+        console.error("Failed to fetch report types:", apiError);
       } finally {
         setLoading(false);
       }
@@ -37,7 +39,7 @@ export default function ReportTypes(): ReactNode {
     return (
       <div className="section">
         <h1 className="text-gradient text-2xl font-bold">Report Types</h1>
-        <p className="text-red-500">{error}</p>
+        <ErrorMessage message={error} />
       </div>
     );
   }

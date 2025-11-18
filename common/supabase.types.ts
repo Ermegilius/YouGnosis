@@ -38,6 +38,7 @@ export type Database = {
           created_at: string | null
           id: string
           job_id: string
+          last_refreshed: string | null
           name: string
           report_type_id: string
           user_id: string
@@ -47,6 +48,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           job_id: string
+          last_refreshed?: string | null
           name: string
           report_type_id: string
           user_id: string
@@ -56,6 +58,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           job_id?: string
+          last_refreshed?: string | null
           name?: string
           report_type_id?: string
           user_id?: string

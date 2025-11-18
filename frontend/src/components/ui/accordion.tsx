@@ -6,7 +6,7 @@ interface AccordionProps {
   defaultOpen?: boolean;
 }
 
-export default function Accordion({
+export function Accordion({
   title,
   children,
   defaultOpen = false,

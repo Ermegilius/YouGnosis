@@ -34,6 +34,12 @@ export interface YouTubeJob {
   createTime: string;
 }
 
+/** YouTube Reporting - Job DTO */
+export interface CreateYouTubeJobDto {
+  reportTypeId: string;
+  name: string;
+}
+
 /**
  * YouTube Reporting API - Report
  * Represents a generated report ready for download

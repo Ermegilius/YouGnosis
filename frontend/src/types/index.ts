@@ -8,6 +8,7 @@
 export type {
   YouTubeReportType,
   YouTubeJob,
+  YouTubeReport,
   GoogleProviderMetadata,
   YouTubeApiErrorResponse,
   YouTubeApiError,
@@ -37,3 +38,6 @@ export interface MenuItem {
   path: string;
   subMenu?: MenuItem[];
 }
+
+// Export api error types
+export { type ApiError, isApiError } from "@src/api/errors.types";
