@@ -222,13 +222,15 @@ export class OAuth2Service {
     userInfo: GoogleUserInfoResponse,
     tokens: GoogleTokensResponse,
   ): Promise<User> {
+    this.logger.debug('Google userInfo:', JSON.stringify(userInfo, null, 2));
+
     const supabaseAdmin = this.supabaseService.getAdminClient();
 
     try {
       // 1. Prepare Google metadata
       const metadata: GoogleProviderMetadata = {
         provider: 'google',
-        provider_id: userInfo.sub,
+        provider_id: userInfo.id,
         provider_token: tokens.access_token,
         provider_refresh_token: tokens.refresh_token,
         provider_token_expires_at: Date.now() + tokens.expires_in * 1000,
@@ -238,11 +240,11 @@ export class OAuth2Service {
         picture: userInfo.picture,
       };
 
-      // 2. Lookup mapping by google_sub
+      // 2. Lookup mapping by google_sub (stores Google user id)
       const { data, error } = await supabaseAdmin
         .from('google_users')
         .select('google_sub, user_id, email, created_at, updated_at')
-        .eq('google_sub', userInfo.sub)
+        .eq('google_sub', userInfo.id)
         .maybeSingle();
 
       // Check for real errors (not "no rows")
@@ -255,7 +257,6 @@ export class OAuth2Service {
       }
 
       // 3. If mapping exists → update existing Supabase user
-      // Use type guard instead of 'as' - ESLint sees this as proper type narrowing
       if (data !== null) {
         this.logger.log(
           `Updating existing Supabase user from google_users mapping: ${userInfo.email}`,
@@ -284,7 +285,7 @@ export class OAuth2Service {
       const { data: created, error: createError } =
         await supabaseAdmin.auth.admin.createUser({
           email: userInfo.email,
-          email_confirm: userInfo.email_verified,
+          email_confirm: userInfo.verified_email,
           user_metadata: metadata,
         });
 
@@ -297,14 +298,15 @@ export class OAuth2Service {
 
       // 5. Insert mapping google_sub → user_id
       const insertPayload: googleUsersRowInsert = {
-        google_sub: userInfo.sub,
+        // Store Google user id in google_sub column
+        google_sub: userInfo.id,
         user_id: newUser.id,
         email: userInfo.email,
       };
 
       const { error: insertError } = await supabaseAdmin
         .from('google_users')
-        .insert(insertPayload);
+        .insert([insertPayload]);
 
       if (insertError) {
         this.logger.error(
@@ -313,7 +315,7 @@ export class OAuth2Service {
         );
       } else {
         this.logger.log(
-          `✅ Created google_users mapping for sub=${userInfo.sub}, user_id=${newUser.id}`,
+          `✅ Created google_users mapping for sub=${userInfo.id}, user_id=${newUser.id}`,
         );
       }
 

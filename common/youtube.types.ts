@@ -74,9 +74,9 @@ export interface GoogleTokensResponse {
  * User profile information from Google
  */
 export interface GoogleUserInfoResponse {
-  sub: string; // Google user ID (unique identifier)
+  id: string; // Google user ID (unique identifier)
   email: string;
-  email_verified: boolean;
+  verified_email: boolean;
   name: string;
   given_name?: string;
   picture?: string;
