@@ -22,11 +22,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setUser(session?.user ?? null);
 
         // Store user ID in localStorage for API calls
-        if (session?.user?.id) {
-          localStorage.setItem("userId", session.user.id);
-        } else {
-          localStorage.removeItem("userId");
-        }
+        // ❌ No longer needed, backend relies solely on Supabase JWT
+        // if (session?.user?.id) {
+        //   localStorage.setItem("userId", session.user.id);
+        // } else {
+        //   localStorage.removeItem("userId");
+        // }
 
         setLoading(false);
       })
@@ -43,13 +44,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setSession(session);
       setUser(session?.user ?? null);
       setError(null);
-
-      // Update localStorage when session changes
-      if (session?.user?.id) {
-        localStorage.setItem("userId", session.user.id);
-      } else {
-        localStorage.removeItem("userId");
-      }
     });
 
     return () => subscription.unsubscribe();
@@ -66,7 +60,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
       setSession(null);
       setUser(null);
-      localStorage.removeItem("userId");
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Sign out failed";

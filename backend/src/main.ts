@@ -33,7 +33,6 @@ async function bootstrap() {
         'Content-Type',
         'Authorization',
         // Custom headers:
-        'x-user-id',
       ],
     });
 

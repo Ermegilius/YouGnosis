@@ -43,11 +43,6 @@ export default function OAuthCallback(): ReactNode {
           throw new Error("Failed to verify session token");
         }
 
-        // Store user ID for API calls
-        if (data.user?.id) {
-          localStorage.setItem("userId", data.user.id);
-        }
-
         // Redirect to dashboard
         navigate("/dashboard", { replace: true });
       } catch (err) {

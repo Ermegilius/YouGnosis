@@ -67,6 +67,9 @@ export class OAuth2Controller {
         throw new BadRequestException('Invalid state parameter');
       }
 
+      // Basic structural/time validation of state
+      this.oauth2Service.validateState(state);
+
       this.logger.log('Received Google OAuth callback with code');
 
       // Exchange code for tokens
@@ -80,15 +83,11 @@ export class OAuth2Controller {
       this.logger.log(`Retrieved user info for: ${userInfo.email}`);
 
       // Create or update Supabase user with Google tokens
-      const user = await this.oauth2Service.createOrUpdateSupabaseUser(
-        userInfo,
-        tokens,
-      );
+      await this.oauth2Service.createOrUpdateSupabaseUser(userInfo, tokens);
       this.logger.log('Supabase user created/updated successfully');
 
-      // Generate a session token for the frontend (pass email)
+      // Generate a session token for the frontend (email-based magic link)
       const sessionToken = await this.oauth2Service.generateSessionToken(
-        user.id,
         userInfo.email,
       );
 

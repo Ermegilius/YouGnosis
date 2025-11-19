@@ -15,6 +15,7 @@ import {
 import { lastValueFrom } from 'rxjs';
 import type { AxiosResponse, AxiosError } from 'axios';
 import type { User } from '@supabase/supabase-js';
+import type { googleUsersRowInsert } from './interfaces/oauth2.interface';
 
 /**
  * OAuth2 Service
@@ -208,6 +209,10 @@ export class OAuth2Service {
    * Create or update Supabase user with Google OAuth tokens
    * Stores tokens in user_metadata for later use by AuthMiddleware
    *
+   * Strategy:
+   * - Use a dedicated mapping table (google_users) keyed by Google "sub"
+   * - Avoid expensive auth.admin.listUsers() calls
+   *
    * @param userInfo - Google user profile
    * @param tokens - Google OAuth tokens
    * @returns Supabase user object
@@ -217,22 +222,10 @@ export class OAuth2Service {
     userInfo: GoogleUserInfoResponse,
     tokens: GoogleTokensResponse,
   ): Promise<User> {
-    const supabase = this.supabaseService.getAdminClient();
+    const supabaseAdmin = this.supabaseService.getAdminClient();
 
     try {
-      // Look up user by email (Google user ID is not a UUID)
-      const { data: existingUsers, error: lookupError } =
-        await supabase.auth.admin.listUsers();
-
-      if (lookupError) {
-        throw lookupError;
-      }
-
-      const existingUser = existingUsers.users.find(
-        (user) => user.email === userInfo.email,
-      );
-
-      // Create type-safe metadata
+      // 1. Prepare Google metadata
       const metadata: GoogleProviderMetadata = {
         provider: 'google',
         provider_id: userInfo.sub,
@@ -245,42 +238,86 @@ export class OAuth2Service {
         picture: userInfo.picture,
       };
 
-      if (existingUser) {
-        // Update existing user
-        this.logger.log(`Updating existing user: ${userInfo.email}`);
+      // 2. Lookup mapping by google_sub
+      const { data, error } = await supabaseAdmin
+        .from('google_users')
+        .select('google_sub, user_id, email, created_at, updated_at')
+        .eq('google_sub', userInfo.sub)
+        .maybeSingle();
 
-        const { data, error } = await supabase.auth.admin.updateUserById(
-          existingUser.id,
-          {
-            user_metadata: metadata,
-          },
+      // Check for real errors (not "no rows")
+      if (error && error.code !== 'PGRST116') {
+        this.logger.error(
+          'Failed to lookup google_users mapping:',
+          error.message,
+        );
+        throw error;
+      }
+
+      // 3. If mapping exists → update existing Supabase user
+      // Use type guard instead of 'as' - ESLint sees this as proper type narrowing
+      if (data !== null) {
+        this.logger.log(
+          `Updating existing Supabase user from google_users mapping: ${userInfo.email}`,
         );
 
-        if (error) {
-          this.logger.error('Failed to update user:', error);
-          throw error;
+        const { data: updated, error: updateError } =
+          await supabaseAdmin.auth.admin.updateUserById(data.user_id, {
+            email: userInfo.email,
+            user_metadata: metadata,
+          });
+
+        if (updateError) {
+          this.logger.error('Failed to update existing user:', updateError);
+          throw updateError;
         }
 
         this.logger.log(`✅ Updated user: ${userInfo.email}`);
-        return data.user;
-      } else {
-        // Create new user
-        this.logger.log(`Creating new user: ${userInfo.email}`);
+        return updated.user;
+      }
 
-        const { data, error } = await supabase.auth.admin.createUser({
+      // 4. If no mapping → create new Supabase user
+      this.logger.log(
+        `No google_users mapping found. Creating new Supabase user for: ${userInfo.email}`,
+      );
+
+      const { data: created, error: createError } =
+        await supabaseAdmin.auth.admin.createUser({
           email: userInfo.email,
           email_confirm: userInfo.email_verified,
           user_metadata: metadata,
         });
 
-        if (error) {
-          this.logger.error('Failed to create user:', error);
-          throw error;
-        }
-
-        this.logger.log(`✅ Created new user: ${userInfo.email}`);
-        return data.user;
+      if (createError || !created.user) {
+        this.logger.error('Failed to create new Supabase user:', createError);
+        throw createError ?? new Error('Unknown error creating user');
       }
+
+      const newUser = created.user;
+
+      // 5. Insert mapping google_sub → user_id
+      const insertPayload: googleUsersRowInsert = {
+        google_sub: userInfo.sub,
+        user_id: newUser.id,
+        email: userInfo.email,
+      };
+
+      const { error: insertError } = await supabaseAdmin
+        .from('google_users')
+        .insert(insertPayload);
+
+      if (insertError) {
+        this.logger.error(
+          'Failed to insert google_users mapping:',
+          insertError.message,
+        );
+      } else {
+        this.logger.log(
+          `✅ Created google_users mapping for sub=${userInfo.sub}, user_id=${newUser.id}`,
+        );
+      }
+
+      return newUser;
     } catch (error) {
       this.logger.error('Failed to create/update Supabase user:', error);
       throw new InternalServerErrorException(
@@ -294,18 +331,17 @@ export class OAuth2Service {
    * Creates a Supabase magic link and extracts the token
    * Frontend uses this token to establish a session
    *
-   * @param userId - Supabase user ID
    * @param email - User email
    * @returns Session token for frontend
    * @throws InternalServerErrorException if token generation fails
    */
-  async generateSessionToken(userId: string, email: string): Promise<string> {
+  async generateSessionToken(email: string): Promise<string> {
     const supabase = this.supabaseService.getAdminClient();
 
     try {
       const { data, error } = await supabase.auth.admin.generateLink({
         type: 'magiclink',
-        email: email,
+        email,
         options: {
           redirectTo: this.configService.get<string>('VITE_FRONTEND_URL'),
         },
@@ -316,9 +352,14 @@ export class OAuth2Service {
         throw error;
       }
 
+      const actionLink = data?.properties?.action_link;
+      if (!actionLink) {
+        throw new Error('Supabase did not return a magic link action URL');
+      }
+
       // Extract token from magic link URL
       // Format: https://project.supabase.co/auth/v1/verify?token=TOKEN&type=magiclink
-      const url = new URL(data.properties.action_link);
+      const url = new URL(actionLink);
       const token = url.searchParams.get('token');
 
       if (!token) {
@@ -349,5 +390,39 @@ export class OAuth2Service {
         random: Math.random().toString(36),
       }),
     ).toString('base64');
+  }
+
+  /**
+   * Decode and validate OAuth2 state parameter
+   * Ensures the state was generated by this server and is not too old.
+   *
+   * @param state - Base64-encoded state string
+   * @param maxAgeMs - Maximum allowed age in milliseconds (default: 10 minutes)
+   * @throws BadRequestException if state is invalid or expired
+   */
+  validateState(state: string, maxAgeMs = 10 * 60 * 1000): void {
+    try {
+      const decoded = Buffer.from(state, 'base64').toString('utf8');
+      const parsed = JSON.parse(decoded) as {
+        timestamp?: number;
+        random?: string;
+      };
+
+      if (
+        !parsed ||
+        typeof parsed.timestamp !== 'number' ||
+        typeof parsed.random !== 'string'
+      ) {
+        throw new Error('Invalid state structure');
+      }
+
+      const age = Date.now() - parsed.timestamp;
+      if (age < 0 || age > maxAgeMs) {
+        throw new Error('State parameter expired');
+      }
+    } catch (error) {
+      this.logger.warn('Invalid OAuth state parameter', error as Error);
+      throw new InternalServerErrorException('Invalid state parameter');
+    }
   }
 }
