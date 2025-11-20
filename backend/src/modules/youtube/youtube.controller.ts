@@ -193,4 +193,20 @@ export class YouTubeController {
 
     return { message: `Metadata for job ${jobId} refreshed successfully` };
   }
+
+  /**
+   * Debug endpoint: show result of channels.list?mine=true for current user
+   */
+  @Get('debug/channels')
+  async debugListMyChannels(
+    @Req() req: AuthenticatedRequest,
+  ): Promise<unknown> {
+    const googleAccessToken = req.googleAccessToken;
+
+    if (!googleAccessToken) {
+      throw new UnauthorizedException('Google access token is missing');
+    }
+
+    return this.youtubeService.listMyChannels(googleAccessToken);
+  }
 }

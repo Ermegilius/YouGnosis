@@ -186,11 +186,13 @@ export class OAuth2Service {
       const response: AxiosResponse<GoogleUserInfoResponse> =
         await lastValueFrom(
           this.httpService.get<GoogleUserInfoResponse>(this.userInfoUrl, {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
+            headers: { Authorization: `Bearer ${accessToken}` },
           }),
         );
+
+      this.logger.debug(
+        `Google userinfo: ${JSON.stringify(response.data, null, 2)}`,
+      );
 
       return response.data;
     } catch (error) {
@@ -210,8 +212,8 @@ export class OAuth2Service {
    * Stores tokens in user_metadata for later use by AuthMiddleware
    *
    * Strategy:
-   * - Use a dedicated mapping table (google_users) keyed by Google "sub"
-   * - Avoid expensive auth.admin.listUsers() calls
+   * - Use a dedicated mapping table (google_users) keyed by Google user ID
+   *   (the `id` field from the userinfo endpoint)
    *
    * @param userInfo - Google user profile
    * @param tokens - Google OAuth tokens
