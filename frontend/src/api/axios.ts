@@ -60,12 +60,6 @@ api.interceptors.request.use(
       config.headers.Authorization = `Bearer ${token}`;
     }
 
-    // Add user ID from localStorage if available
-    const userId = localStorage.getItem("userId");
-    if (userId) {
-      config.headers["x-user-id"] = userId;
-    }
-
     return config;
   },
   (error) => {

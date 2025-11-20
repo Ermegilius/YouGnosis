@@ -37,6 +37,7 @@ interface ReportsResponse {
 export class YouTubeService {
   private readonly logger = new Logger(YouTubeService.name);
   private readonly baseUrl = 'https://youtubereporting.googleapis.com/v1';
+  private readonly dataApiBaseUrl = 'https://www.googleapis.com/youtube/v3';
 
   constructor(
     private readonly httpService: HttpService,
@@ -409,6 +410,47 @@ export class YouTubeService {
           error,
         );
       }
+    }
+  }
+
+  /**
+   * Debug helper: list channels for the current Google account
+   * Direct YouTube Data API v3 call: channels.list?part=id,snippet,statistics&mine=true
+   *
+   * @param googleAccessToken - Google OAuth access token (with youtube.readonly scope)
+   */
+  async listMyChannels(googleAccessToken: string): Promise<unknown> {
+    if (!googleAccessToken) {
+      throw new UnauthorizedException(
+        'No Google access token found. Please re-authenticate.',
+      );
+    }
+
+    const url = `${this.dataApiBaseUrl}/channels`;
+    const params = {
+      part: 'id,snippet,statistics',
+      mine: 'true',
+    };
+
+    try {
+      this.logger.debug('Calling YouTube Data API: channels.list?mine=true');
+
+      const response: AxiosResponse<unknown> = await lastValueFrom(
+        this.httpService.get<unknown>(url, {
+          headers: {
+            Authorization: `Bearer ${googleAccessToken}`,
+          },
+          params,
+        }),
+      );
+
+      this.logger.debug(
+        `channels.list response: ${JSON.stringify(response.data, null, 2)}`,
+      );
+
+      return response.data;
+    } catch (error: unknown) {
+      this.handleYouTubeApiError(error, 'Failed to list YouTube channels');
     }
   }
 

@@ -57,7 +57,7 @@ The application automatically selects the environment file based on the `NODE_EN
 ```bash
 NODE_ENV=development
 PORT=3000
-ALLOWED_ORIGINS=http://127.0.0.1:8000,http://localhost:8000
+ALLOWED_ORIGINS=http://localhost:8000
 ```
 
 ### Supabase Configuration
@@ -95,7 +95,7 @@ SUPABASE_SECRET_KEY_DEFAULT=your_secret_key
 
 ```bash
 VITE_SUPABASE_URL=${SUPABASE_URL}
-VITE_API_URL=http://127.0.0.1:3000
+VITE_API_URL=http://localhost:3000
 ```
 
 ---
