@@ -56,6 +56,75 @@ export type Database = {
         }
         Relationships: []
       }
+      youtube_daily_metrics: {
+        Row: {
+          channel_id: string
+          created_at: string
+          estimated_revenue: number | null
+          id: string
+          job_id: string
+          metric_payload: Json
+          report_date: string
+          report_file_id: string
+          subscribers_gained: number | null
+          subscribers_lost: number | null
+          updated_at: string
+          user_id: string
+          video_id: string | null
+          views: number
+          watch_time_minutes: number
+        }
+        Insert: {
+          channel_id: string
+          created_at?: string
+          estimated_revenue?: number | null
+          id?: string
+          job_id: string
+          metric_payload: Json
+          report_date: string
+          report_file_id: string
+          subscribers_gained?: number | null
+          subscribers_lost?: number | null
+          updated_at?: string
+          user_id: string
+          video_id?: string | null
+          views?: number
+          watch_time_minutes?: number
+        }
+        Update: {
+          channel_id?: string
+          created_at?: string
+          estimated_revenue?: number | null
+          id?: string
+          job_id?: string
+          metric_payload?: Json
+          report_date?: string
+          report_file_id?: string
+          subscribers_gained?: number | null
+          subscribers_lost?: number | null
+          updated_at?: string
+          user_id?: string
+          video_id?: string | null
+          views?: number
+          watch_time_minutes?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "youtube_daily_metrics_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "youtube_jobs"
+            referencedColumns: ["job_id"]
+          },
+          {
+            foreignKeyName: "youtube_daily_metrics_report_file_id_fkey"
+            columns: ["report_file_id"]
+            isOneToOne: false
+            referencedRelation: "youtube_report_files"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       youtube_jobs: {
         Row: {
           create_time: string
@@ -71,7 +140,7 @@ export type Database = {
           create_time: string
           created_at?: string | null
           id?: string
-          job_id: string
+          job_id?: string
           last_refreshed?: string | null
           name: string
           report_type_id: string
@@ -89,9 +158,83 @@ export type Database = {
         }
         Relationships: []
       }
+      youtube_report_files: {
+        Row: {
+          created_at: string
+          download_url: string
+          end_time: string
+          error_message: string | null
+          file_checksum: string
+          id: string
+          job_id: string
+          processed_at: string | null
+          report_id: string
+          start_time: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          download_url: string
+          end_time: string
+          error_message?: string | null
+          file_checksum: string
+          id?: string
+          job_id: string
+          processed_at?: string | null
+          report_id: string
+          start_time: string
+          status: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          download_url?: string
+          end_time?: string
+          error_message?: string | null
+          file_checksum?: string
+          id?: string
+          job_id?: string
+          processed_at?: string | null
+          report_id?: string
+          start_time?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "youtube_report_files_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "youtube_jobs"
+            referencedColumns: ["job_id"]
+          },
+        ]
+      }
     }
     Views: {
-      [_ in never]: never
+      youtube_metric_aggregates: {
+        Row: {
+          bucket_date: string | null
+          channel_id: string | null
+          job_id: string | null
+          net_subs_30d: number | null
+          user_id: string | null
+          video_id: string | null
+          views_30d: number | null
+          views_7d: number | null
+          watch_minutes_30d: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "youtube_daily_metrics_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "youtube_jobs"
+            referencedColumns: ["job_id"]
+          },
+        ]
+      }
     }
     Functions: {
       [_ in never]: never
