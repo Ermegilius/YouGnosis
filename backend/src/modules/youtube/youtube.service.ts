@@ -854,11 +854,11 @@ export class YouTubeService {
    * Scheduled task to ingest all available report files for every saved job.
    * Runs at minute 15 of every hour to stay within YouTube Reporting quotas.
    */
-  @Cron('15 * * * *')
+  @Cron('00 * * * *')
   async ingestReportsForAllJobs(): Promise<void> {
     this.logger.log('Running scheduled YouTube report ingestion');
 
-    const supabase = this.supabaseService.getClient();
+    const supabase = this.supabaseService.getAdminClient();
     const { data: jobs, error } = await supabase
       .from('youtube_jobs')
       .select('job_id, user_id');
@@ -880,10 +880,23 @@ export class YouTubeService {
         const userResponse = await supabase.auth.admin.getUserById(job.user_id);
         const metadata = userResponse?.data?.user?.user_metadata;
 
+        // Debug: Log actual metadata for diagnosis
+        this.logger.debug(
+          `User ${job.user_id} metadata: ${JSON.stringify(metadata, null, 2)}`,
+        );
+
         if (!isGoogleProviderMetadata(metadata)) {
           this.logger.warn(
-            `Skipping job ${job.job_id}: missing Google provider metadata`,
+            `Skipping job ${job.job_id}: missing Google provider metadata. Metadata: ${JSON.stringify(metadata)}`,
           );
+          // Optional: Mark job as inactive to avoid future warnings
+          await supabase
+            .from('youtube_jobs')
+            .update({
+              status: 'inactive',
+              last_refreshed: new Date().toISOString(),
+            })
+            .eq('job_id', job.job_id);
           continue;
         }
 
