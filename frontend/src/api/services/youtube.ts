@@ -4,6 +4,7 @@ import type {
   YouTubeReport,
   YouTubeReportType,
 } from "@src/types/index";
+import type { Database } from "@common/supabase.types";
 
 /**
  * Fetch all YouTube report types.
@@ -79,4 +80,33 @@ export const downloadReportApi = async (
     { params: { reportId, jobId } },
   );
   return response.data;
+};
+
+type DailyMetricRow =
+  Database["public"]["Tables"]["youtube_daily_metrics"]["Row"];
+
+interface GetDailyMetricsParams {
+  startDate?: string;
+  endDate?: string;
+  limit?: number;
+}
+
+export const ingestJobReportsApi = async (
+  jobId: string,
+): Promise<{ jobId: string; status: string }> => {
+  const response = await api.post<{ jobId: string; status: string }>(
+    `/youtube/jobs/${jobId}/ingest`,
+  );
+  return response.data;
+};
+
+export const getDailyMetricsApi = async (
+  jobId: string,
+  params?: GetDailyMetricsParams,
+): Promise<DailyMetricRow[]> => {
+  const response = await api.get<{ data: DailyMetricRow[] }>(
+    `/youtube/jobs/${jobId}/daily-metrics`,
+    { params },
+  );
+  return response.data.data;
 };

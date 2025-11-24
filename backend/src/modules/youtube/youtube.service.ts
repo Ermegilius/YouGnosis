@@ -28,12 +28,20 @@ interface ReportTypesResponse {
   reportTypes: YouTubeReportType[];
 }
 
+export interface GetDailyMetricsResponse {
+  data: YoutubeDailyMetricRow[];
+}
+
 /**
  * YouTube Reporting API response for reports list
  */
 interface ReportsResponse {
   reports?: YouTubeReport[];
 }
+
+type YoutubeDailyMetricRow =
+  Database['public']['Tables']['youtube_daily_metrics']['Row'];
+
 type YoutubeDailyMetricInsert =
   Database['public']['Tables']['youtube_daily_metrics']['Insert'];
 
@@ -892,5 +900,42 @@ export class YouTubeService {
         );
       }
     }
+  }
+
+  async getDailyMetrics(params: {
+    userId: string;
+    jobId: string;
+    startDate?: string;
+    endDate?: string;
+    limit?: number;
+  }): Promise<YoutubeDailyMetricRow[]> {
+    const { userId, jobId, startDate, endDate, limit = 100 } = params;
+    const supabase = this.supabaseService.getClient();
+
+    let query = supabase
+      .from('youtube_daily_metrics')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('job_id', jobId)
+      .order('report_date', { ascending: false })
+      .limit(limit);
+
+    if (startDate) {
+      query = query.gte('report_date', startDate);
+    }
+
+    if (endDate) {
+      query = query.lte('report_date', endDate);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      this.logger.error('Failed to load daily metrics', error.message);
+      throw new InternalServerErrorException(
+        'Unable to load YouTube daily metrics',
+      );
+    }
+    return data ?? [];
   }
 }

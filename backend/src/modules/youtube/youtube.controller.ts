@@ -10,7 +10,10 @@ import {
   UnauthorizedException,
   BadRequestException,
 } from '@nestjs/common';
-import { YouTubeService } from './youtube.service';
+import {
+  YouTubeService,
+  type GetDailyMetricsResponse,
+} from './youtube.service';
 import {
   YouTubeJob,
   YouTubeReportType,
@@ -232,5 +235,30 @@ export class YouTubeController {
     );
 
     return { jobId, status: 'ingested' };
+  }
+
+  @Get('jobs/:jobId/daily-metrics')
+  async getJobDailyMetrics(
+    @Param('jobId') jobId: string,
+    @Req() req: AuthenticatedRequest,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
+    @Query('limit') limit?: string,
+  ): Promise<GetDailyMetricsResponse> {
+    if (!req.user?.id) {
+      throw new UnauthorizedException('User ID not found in request.');
+    }
+
+    const parsedLimit = limit ? Number(limit) : undefined;
+
+    const data = await this.youtubeService.getDailyMetrics({
+      userId: req.user.id,
+      jobId,
+      startDate,
+      endDate,
+      limit: parsedLimit,
+    });
+
+    return { data };
   }
 }
