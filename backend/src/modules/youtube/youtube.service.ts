@@ -10,6 +10,7 @@ import type {
   YouTubeJob,
   YouTubeReport,
 } from '@common/youtube.types';
+import type { Database, Json } from '@common/supabase.types';
 import { lastValueFrom } from 'rxjs';
 import { SupabaseService } from '../supabase/supabase.service';
 import { AxiosResponse, AxiosError } from 'axios';
@@ -18,6 +19,7 @@ import {
   isYouTubeApiErrorResponse,
 } from '@src/types';
 import { Cron } from '@nestjs/schedule';
+import { createHash } from 'crypto';
 
 /**
  * YouTube Reporting API response for report types
@@ -31,6 +33,20 @@ interface ReportTypesResponse {
  */
 interface ReportsResponse {
   reports?: YouTubeReport[];
+}
+type YoutubeDailyMetricInsert =
+  Database['public']['Tables']['youtube_daily_metrics']['Insert'];
+
+interface ParsedMetricRow {
+  reportDate: string;
+  channelId: string;
+  videoId: string | null;
+  views: number;
+  watchTimeMinutes: number;
+  estimatedRevenue: number | null;
+  subscribersGained: number;
+  subscribersLost: number;
+  metricPayload: Record<string, unknown>;
 }
 
 @Injectable()
@@ -548,5 +564,333 @@ export class YouTubeService {
     // Handle unknown error types
     this.logger.error(`${context}: Unknown error`, error);
     throw new InternalServerErrorException('An unknown error occurred');
+  }
+
+  /**
+   * Fetch, parse, and persist all pending reports for a job
+   */
+  async ingestReportsForJob(
+    googleAccessToken: string,
+    jobId: string,
+    userId: string,
+  ): Promise<void> {
+    const reports = await this.listReports(googleAccessToken, jobId);
+
+    if (!reports.length) {
+      this.logger.log(`No reports available for job ${jobId}`);
+      return;
+    }
+
+    for (const report of reports) {
+      await this.processReportFile({
+        report,
+        googleAccessToken,
+        jobId,
+        userId,
+      });
+    }
+  }
+
+  private async processReportFile(params: {
+    report: YouTubeReport;
+    googleAccessToken: string;
+    jobId: string;
+    userId: string;
+  }): Promise<void> {
+    const { report, googleAccessToken, jobId, userId } = params;
+    const supabase = this.supabaseService.getClient();
+
+    const { data: existing, error: lookupError } = await supabase
+      .from('youtube_report_files')
+      .select('id,status,file_checksum')
+      .eq('user_id', userId)
+      .eq('job_id', jobId)
+      .eq('report_id', report.id)
+      .maybeSingle();
+
+    if (lookupError) {
+      this.logger.error(
+        `Failed to lookup ledger for report ${report.id}`,
+        lookupError.message,
+      );
+      throw new InternalServerErrorException('Ledger lookup failed');
+    }
+
+    if (existing?.status === 'parsed') {
+      this.logger.debug(`Report ${report.id} already ingested, skipping`);
+      return;
+    }
+
+    const csv = await this.downloadReport(googleAccessToken, jobId, report.id);
+    const checksum = this.computeChecksum(csv);
+
+    const { data: ledger, error: ledgerError } = await supabase
+      .from('youtube_report_files')
+      .upsert(
+        {
+          id: existing?.id,
+          user_id: userId,
+          job_id: jobId,
+          report_id: report.id,
+          start_time: report.startTime,
+          end_time: report.endTime,
+          file_checksum: checksum,
+          download_url: report.downloadUrl ?? null,
+          status: 'pending',
+          processed_at: null,
+          error_message: null,
+        },
+        { onConflict: 'user_id,job_id,report_id' },
+      )
+      .select()
+      .single();
+
+    if (ledgerError || !ledger) {
+      this.logger.error(
+        `Failed to upsert ledger row for report ${report.id}`,
+        ledgerError?.message,
+      );
+      throw new InternalServerErrorException('Ledger upsert failed');
+    }
+
+    try {
+      const parsedRows = this.parseCsvReport(csv, report);
+
+      await supabase
+        .from('youtube_daily_metrics')
+        .delete()
+        .eq('report_file_id', ledger.id);
+
+      await this.insertDailyMetrics(
+        parsedRows.map((row) => ({
+          user_id: userId,
+          job_id: jobId,
+          report_file_id: ledger.id,
+          report_date: row.reportDate,
+          channel_id: row.channelId,
+          video_id: row.videoId ?? null,
+          views: row.views,
+          watch_time_minutes: row.watchTimeMinutes,
+          estimated_revenue: row.estimatedRevenue,
+          subscribers_gained: row.subscribersGained,
+          subscribers_lost: row.subscribersLost,
+          metric_payload: row.metricPayload as Json,
+        })),
+      );
+
+      await supabase
+        .from('youtube_report_files')
+        .update({
+          status: 'parsed',
+          processed_at: new Date().toISOString(),
+          error_message: null,
+        })
+        .eq('id', ledger.id);
+    } catch (error: unknown) {
+      await supabase
+        .from('youtube_report_files')
+        .update({
+          status: 'error',
+          error_message:
+            error instanceof Error ? error.message : 'Unknown ingestion error',
+        })
+        .eq('id', ledger.id);
+
+      throw error;
+    }
+  }
+
+  private async insertDailyMetrics(
+    rows: YoutubeDailyMetricInsert[],
+  ): Promise<void> {
+    if (!rows.length) {
+      return;
+    }
+
+    const supabase = this.supabaseService.getClient();
+    const chunkSize = 500;
+
+    for (let i = 0; i < rows.length; i += chunkSize) {
+      const chunk = rows.slice(i, i + chunkSize);
+      const { error } = await supabase
+        .from('youtube_daily_metrics')
+        .insert(chunk);
+
+      if (error) {
+        this.logger.error(
+          'Failed to insert daily metrics chunk',
+          error.message,
+        );
+        throw new InternalServerErrorException(
+          'Persisting daily metrics failed',
+        );
+      }
+    }
+  }
+
+  private parseCsvReport(
+    csvData: string,
+    report: YouTubeReport,
+  ): ParsedMetricRow[] {
+    const content = csvData.trim();
+    if (!content) {
+      return [];
+    }
+
+    const [headerLine, ...rawRows] = content.split(/\r?\n/);
+    const headers = this.splitCsvLine(headerLine).map((cell) => cell.trim());
+
+    return rawRows
+      .map((line) => this.splitCsvLine(line))
+      .filter((cells) => cells.length === headers.length)
+      .map((cells) => {
+        const payload: Record<string, unknown> = {};
+        headers.forEach((header, idx) => {
+          payload[header] = this.stripQuotes(cells[idx]?.trim());
+        });
+
+        const reportDate =
+          (payload.day as string | undefined) ??
+          (payload.date as string | undefined) ??
+          report.startTime ??
+          report.endTime;
+
+        const channelId =
+          (payload.channel_id as string | undefined) ??
+          (payload.channelId as string | undefined);
+
+        if (!reportDate || !channelId) {
+          return null;
+        }
+
+        return {
+          reportDate: reportDate.slice(0, 10),
+          channelId,
+          videoId:
+            (payload.video_id as string | undefined) ??
+            (payload.videoId as string | undefined) ??
+            null,
+          views: this.toNumber(payload.views),
+          watchTimeMinutes: this.toNumber(
+            payload.watch_time_minutes ?? payload.watchTimeMinutes,
+          ),
+          estimatedRevenue: this.toNullableNumber(
+            payload.estimated_revenue ?? payload.estimatedRevenue,
+          ),
+          subscribersGained: this.toNumber(
+            payload.subscribers_gained ?? payload.subscribersGained,
+          ),
+          subscribersLost: this.toNumber(
+            payload.subscribers_lost ?? payload.subscribersLost,
+          ),
+          metricPayload: payload,
+        } as ParsedMetricRow;
+      })
+      .filter((row): row is ParsedMetricRow => row !== null);
+  }
+
+  private splitCsvLine(line: string): string[] {
+    const cells: string[] = [];
+    let current = '';
+    let inQuotes = false;
+
+    for (let i = 0; i < line.length; i += 1) {
+      const char = line[i];
+
+      if (char === '"' && line[i + 1] === '"') {
+        current += '"';
+        i += 1;
+        continue;
+      }
+
+      if (char === '"') {
+        inQuotes = !inQuotes;
+        continue;
+      }
+
+      if (char === ',' && !inQuotes) {
+        cells.push(current);
+        current = '';
+        continue;
+      }
+
+      current += char;
+    }
+
+    cells.push(current);
+    return cells;
+  }
+
+  private stripQuotes(value?: string): string | null {
+    if (value === undefined) {
+      return null;
+    }
+    return value.replace(/^"(.*)"$/, '$1');
+  }
+
+  private toNumber(value: unknown): number {
+    const parsed = Number(value ?? 0);
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+
+  private toNullableNumber(value: unknown): number | null {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+
+  private computeChecksum(payload: string): string {
+    return createHash('sha256').update(payload).digest('hex');
+  }
+
+  /**
+   * Scheduled task to ingest all available report files for every saved job.
+   * Runs at minute 15 of every hour to stay within YouTube Reporting quotas.
+   */
+  @Cron('15 * * * *')
+  async ingestReportsForAllJobs(): Promise<void> {
+    this.logger.log('Running scheduled YouTube report ingestion');
+
+    const supabase = this.supabaseService.getClient();
+    const { data: jobs, error } = await supabase
+      .from('youtube_jobs')
+      .select('job_id, user_id');
+
+    if (error) {
+      this.logger.error('Failed to fetch jobs for ingestion', error.message);
+      throw new InternalServerErrorException(
+        'Failed to fetch jobs for ingestion',
+      );
+    }
+
+    if (!jobs?.length) {
+      this.logger.log('No jobs found for ingestion');
+      return;
+    }
+
+    for (const job of jobs) {
+      try {
+        const userResponse = await supabase.auth.admin.getUserById(job.user_id);
+        const metadata = userResponse?.data?.user?.user_metadata;
+
+        if (!isGoogleProviderMetadata(metadata)) {
+          this.logger.warn(
+            `Skipping job ${job.job_id}: missing Google provider metadata`,
+          );
+          continue;
+        }
+
+        await this.ingestReportsForJob(
+          metadata.provider_token,
+          job.job_id,
+          job.user_id,
+        );
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : String(error);
+        this.logger.error(
+          `Failed to ingest reports for job ${job.job_id}`,
+          message,
+        );
+      }
+    }
   }
 }

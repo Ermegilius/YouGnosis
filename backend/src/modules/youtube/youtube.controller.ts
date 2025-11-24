@@ -209,4 +209,28 @@ export class YouTubeController {
 
     return this.youtubeService.listMyChannels(googleAccessToken);
   }
+
+  @Post('jobs/:jobId/ingest')
+  async ingestJobReports(
+    @Param('jobId') jobId: string,
+    @Req() req: AuthenticatedRequest,
+  ): Promise<{ jobId: string; status: string }> {
+    if (!req.googleAccessToken) {
+      throw new UnauthorizedException(
+        'No Google access token found. Please re-authenticate.',
+      );
+    }
+
+    if (!req.user?.id) {
+      throw new UnauthorizedException('User ID not found in request.');
+    }
+
+    await this.youtubeService.ingestReportsForJob(
+      req.googleAccessToken,
+      jobId,
+      req.user.id,
+    );
+
+    return { jobId, status: 'ingested' };
+  }
 }
