@@ -20,6 +20,7 @@ import {
   ErrorMessage,
   LoadingSpinner,
 } from "@src/components/ui";
+import { DailyMetricsTable } from "@src/components/DailyMetricsTable";
 
 /**
  * YouTubeJobs - Manage YouTube Reporting API jobs
@@ -169,6 +170,13 @@ export default function YouTubeJobs(): ReactNode {
       setDownloading(null);
     }
   };
+
+  // Set default selected job ID when jobs are loaded
+  useEffect(() => {
+    if (jobs.length && !selectedJobId) {
+      setSelectedJobId(jobs[0].id);
+    }
+  }, [jobs, selectedJobId]);
 
   if (reportTypesLoading) {
     return <LoadingSpinner />;
@@ -347,6 +355,28 @@ export default function YouTubeJobs(): ReactNode {
           </div>
         )}
       </Card>
+
+      {/* Job Selection and Metrics Table */}
+      {jobs.length > 0 && (
+        <div className="mt-6">
+          <label className="text-sm font-medium text-slate-300">
+            Select job
+          </label>
+          <select
+            className="mt-2 w-full rounded-md border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white focus:border-blue-500 focus:outline-none"
+            value={selectedJobId ?? ""}
+            onChange={(event) => setSelectedJobId(event.target.value)}
+          >
+            {jobs.map((job) => (
+              <option key={job.id} value={job.id}>
+                {job.name ?? job.reportTypeId}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+
+      <DailyMetricsTable jobId={selectedJobId} />
     </div>
   );
 }
