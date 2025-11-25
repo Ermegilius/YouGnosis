@@ -18,6 +18,7 @@
 ## 3. Report Ingestion
 
 - `backend/src/modules/youtube/youtube.service.ts` lists reports (`/jobs/{jobId}/reports`) and downloads CSV files using the saved Google access token.
+- **Rate limiting:** Each report download request waits 0.5 seconds to respect YouTube's 60 downloads/minute quota. This is logged for traceability.
 - Each raw file creates a `youtube_report_files` row containing time window, checksum, download URL, and processing status.
 - Deduplication is enforced by `(user_id, job_id, report_id)` unique index before parsing data.
 
