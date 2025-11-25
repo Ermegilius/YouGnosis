@@ -3,6 +3,7 @@ import { HttpModule } from '@nestjs/axios';
 import { YouTubeService } from './youtube.service';
 import { YouTubeController } from './youtube.controller';
 import { SupabaseModule } from '../supabase/supabase.module';
+import { OAuth2Module } from '../oauth2/oauth2.module';
 
 @Module({
   imports: [
@@ -11,6 +12,7 @@ import { SupabaseModule } from '../supabase/supabase.module';
       maxRedirects: 5,
     }),
     SupabaseModule,
+    OAuth2Module,
   ],
   controllers: [YouTubeController],
   providers: [YouTubeService],
