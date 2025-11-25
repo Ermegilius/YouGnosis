@@ -20,6 +20,7 @@ import {
 } from '@src/types';
 import { Cron } from '@nestjs/schedule';
 import { createHash } from 'crypto';
+import { OAuth2Service } from '../oauth2/oauth2.service';
 
 /**
  * YouTube Reporting API response for report types
@@ -66,6 +67,7 @@ export class YouTubeService {
   constructor(
     private readonly httpService: HttpService,
     private readonly supabaseService: SupabaseService,
+    private readonly oauth2Service: OAuth2Service,
   ) {}
 
   /**
@@ -632,6 +634,12 @@ export class YouTubeService {
     const csv = await this.downloadReport(googleAccessToken, jobId, report.id);
     const checksum = this.computeChecksum(csv);
 
+    // Wait 1 second to avoid hitting YouTube API quota limits
+    this.logger.debug(
+      `Waiting 0.5 seconds after downloading report ${report.id} to respect YouTube API rate limits...`,
+    );
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
     const { data: ledger, error: ledgerError } = await supabase
       .from('youtube_report_files')
       .upsert(
@@ -852,7 +860,7 @@ export class YouTubeService {
 
   /**
    * Scheduled task to ingest all available report files for every saved job.
-   * Runs at minute 15 of every hour to stay within YouTube Reporting quotas.
+   * Runs at minute 00 of every hour.
    */
   @Cron('00 * * * *')
   async ingestReportsForAllJobs(): Promise<void> {
@@ -880,7 +888,6 @@ export class YouTubeService {
         const userResponse = await supabase.auth.admin.getUserById(job.user_id);
         const metadata = userResponse?.data?.user?.user_metadata;
 
-        // Debug: Log actual metadata for diagnosis
         this.logger.debug(
           `User ${job.user_id} metadata: ${JSON.stringify(metadata, null, 2)}`,
         );
@@ -889,7 +896,6 @@ export class YouTubeService {
           this.logger.warn(
             `Skipping job ${job.job_id}: missing Google provider metadata. Metadata: ${JSON.stringify(metadata)}`,
           );
-          // Optional: Mark job as inactive to avoid future warnings
           await supabase
             .from('youtube_jobs')
             .update({
@@ -900,8 +906,49 @@ export class YouTubeService {
           continue;
         }
 
+        // --- Token refresh logic ---
+        let googleAccessToken = metadata.provider_token;
+        const expiresAt = Number(metadata.provider_token_expires_at ?? 0);
+        const now = Date.now();
+        const fiveMinutes = 5 * 60 * 1000;
+
+        if (!googleAccessToken || expiresAt - now < fiveMinutes) {
+          if (!metadata.provider_refresh_token) {
+            this.logger.error(
+              `Cannot refresh Google token for user ${job.user_id}: missing provider_refresh_token in metadata.`,
+            );
+            continue;
+          }
+          this.logger.debug(
+            `Refreshing Google token for user ${job.user_id} (expires at ${expiresAt}, now ${now})`,
+          );
+          try {
+            const refreshed = await this.oauth2Service.refreshAccessToken(
+              metadata.provider_refresh_token,
+            );
+            googleAccessToken = refreshed.access_token;
+
+            // Update user metadata in Supabase
+            await supabase.auth.admin.updateUserById(job.user_id, {
+              user_metadata: {
+                ...metadata,
+                provider_token: refreshed.access_token,
+                provider_token_expires_at: now + refreshed.expires_in * 1000,
+              },
+            });
+          } catch (refreshError) {
+            this.logger.error(
+              `Failed to refresh Google token for user ${job.user_id}`,
+              refreshError instanceof Error
+                ? refreshError.message
+                : String(refreshError),
+            );
+            continue;
+          }
+        }
+
         await this.ingestReportsForJob(
-          metadata.provider_token,
+          googleAccessToken,
           job.job_id,
           job.user_id,
         );
