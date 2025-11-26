@@ -1,19 +1,20 @@
 # --- Build Stage ---
 FROM node:20-alpine AS builder
 
-WORKDIR /app
+WORKDIR /app/frontend
 
-# Copy root package.json and package-lock.json for workspace install
-COPY package.json package-lock.json ./
-COPY frontend ./frontend
-COPY common ./common
-COPY .env.development .env.development
+# Copy necessary files
+COPY frontend/package.json ./
+COPY package-lock.json ../
+COPY common ../common
+COPY .env.development ../.env.development
 
-# Install dependencies for all workspaces
+# Install dependencies
 RUN npm install
 
-# Build frontend (Vite)
-RUN npm run build:frontend
+COPY frontend ./
+# Build frontend (in dev mode for now. It will use .env.development)
+RUN npm run build -- --mode development
 
 # --- Production Stage ---
 FROM nginx:alpine
