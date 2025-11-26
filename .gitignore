@@ -151,3 +151,4 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 .vercel/
 .github/*instructions.md
 .github/instructions/*.instructions.md
+scripts/
