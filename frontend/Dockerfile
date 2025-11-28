@@ -22,6 +22,9 @@ FROM nginx:alpine
 # Copy built frontend assets to nginx
 COPY --from=builder /app/frontend/dist /usr/share/nginx/html
 
+# Copy custom nginx config for SPA routing
+COPY frontend/nginx.conf /etc/nginx/conf.d/default.conf
+
 EXPOSE 80
 
 CMD ["nginx", "-g", "daemon off;"]
