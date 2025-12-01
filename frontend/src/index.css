@@ -69,7 +69,7 @@
   /* Spacing */
   --spacing-section: 3rem;
   --spacing-section-sm: 4rem;
-  --spacing-section-lg: 5rem;
+  --spacing-section-lg: 1rem;
 
   /* Animations */
   --animate-fade-in: fadeIn 0.3s ease-in-out;
@@ -323,7 +323,7 @@
   .container {
     margin-left: auto;
     margin-right: auto;
-    max-width: 80rem;
+    max-width: 120rem; /* Increased from 80rem for ultra-wide screens */
     padding-left: 1rem;
     padding-right: 1rem;
     box-sizing: border-box; /* Ensure padding doesn’t exceed width */

@@ -8,26 +8,30 @@ import SessionData from "@src/components/SessionData";
  */
 export default function DashboardPage(): ReactNode {
   return (
-    <div className="space-y-8">
-      <DashboardSection title="User Profile">
-        <SessionData />
-      </DashboardSection>
+    // Use only .container for horizontal width, .section for vertical spacing.
+    // Add responsive grid for cards on larger screens.
+    <div className="section container">
+      <div className="flex flex-col gap-8 md:grid md:grid-cols-2 xl:grid-cols-3">
+        <DashboardSection title="User Profile">
+          <SessionData />
+        </DashboardSection>
 
-      <DashboardSection title="Test Data">
-        <TestDataDisplay />
-      </DashboardSection>
+        <DashboardSection title="Test Data">
+          <TestDataDisplay />
+        </DashboardSection>
 
-      <DashboardSection title="Channel Performance">
-        <PlaceholderContent />
-      </DashboardSection>
+        <DashboardSection title="Channel Performance">
+          <PlaceholderContent />
+        </DashboardSection>
 
-      <DashboardSection title="SEO Recommendations">
-        <PlaceholderContent />
-      </DashboardSection>
+        <DashboardSection title="SEO Recommendations">
+          <PlaceholderContent />
+        </DashboardSection>
 
-      <DashboardSection title="Competitor Analysis">
-        <PlaceholderContent />
-      </DashboardSection>
+        <DashboardSection title="Competitor Analysis">
+          <PlaceholderContent />
+        </DashboardSection>
+      </div>
     </div>
   );
 }
@@ -43,7 +47,7 @@ function DashboardSection({
   children: ReactNode;
 }): ReactNode {
   return (
-    <section className="card">
+    <section className="card flex flex-col">
       <h2 className="card-title mb-4 text-2xl">{title}</h2>
       {children}
     </section>

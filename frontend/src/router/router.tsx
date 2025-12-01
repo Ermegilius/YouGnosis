@@ -12,6 +12,10 @@ import { ProtectedLayout } from "@src/components/ProtectedLayout";
 import ReportTypes from "@src/pages/ReportTypes";
 import OAuthCallback from "@src/pages/OAuthCallback";
 import YouTubeJobs from "@src/pages/JobManagementPage";
+import PrivacyPolicyPage from "@src/pages/PrivacyPolicyPage";
+import TermsOfUsePage from "@src/pages/TermsOfUsePage";
+import { ConsentScreenPage } from "@src/pages/ConsentScreenPage";
+import { AnonLayout } from "@src/components/AnonLayout";
 
 /**
  * CatchAll - redirect based on auth state (authenticated -> /dashboard, else -> /)
@@ -25,10 +29,15 @@ function CatchAll() {
 export const AppRouter = () => {
   return (
     <Routes>
-      {/* Public Routes - no layout wrapper */}
-      <Route path="/" element={<LandingPage />} />
+      {/* Public Routes - wrapped in AnonLayout for nav/footer */}
+      <Route element={<AnonLayout />}>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+        <Route path="/terms-of-use" element={<TermsOfUsePage />} />
+        <Route path="/consent" element={<ConsentScreenPage />} />
+      </Route>
 
-      {/* OAuth callback route - public, no auth required */}
+      {/* OAuth callback route */}
       <Route path="/auth/callback" element={<OAuthCallback />} />
 
       {/* Protected Routes - wrapped in App layout */}

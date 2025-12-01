@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { Link } from "react-router-dom";
 
 /**
  * Footer - Application footer for all pages.
@@ -9,7 +10,17 @@ export function Footer(): ReactNode {
     <footer className="card-content mt-12 border-t py-6 text-center text-xs shadow-inner">
       &copy; {new Date().getFullYear()} YouGnosis. All rights reserved.
       <br />
-      <span>DEVELOPMENT: version_28.11.2025_1</span>
+      <span>DEVELOPMENT: version_01.12.2025_2</span>
+      <br />
+      <span>
+        <Link to="/privacy-policy" className="link mx-2">
+          Privacy Policy
+        </Link>
+        |
+        <Link to="/terms-of-use" className="link mx-2">
+          Terms of Use
+        </Link>
+      </span>
     </footer>
   );
 }

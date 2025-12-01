@@ -1,7 +1,5 @@
 import { Link } from "react-router-dom";
 import hero from "../assets/hero.webp";
-import { Footer } from "@src/components/Footer";
-import { Navigation } from "@src/components/Navigation";
 import { ArrowRight } from "lucide-react";
 
 /**
@@ -9,13 +7,12 @@ import { ArrowRight } from "lucide-react";
  * - hero uses left-aligned image composition (person left, content centered)
  * - softer overlay, larger readable CTA, improved spacing
  * - dark mode handled via global CSS in index.css
+ * - layout uses .container for full width, not max-w-4xl
  */
 export default function LandingPage() {
   return (
-    <div className="flex min-h-screen flex-col">
-      <Navigation />
-
-      <section className="relative flex min-h-[640px] items-center justify-center pt-20">
+    <main className="flex flex-col">
+      <section className="relative flex min-h-[640px] items-center justify-center">
         {/* background image positioned to left to mimic your screenshots */}
         <div
           className="absolute inset-0 bg-cover bg-no-repeat"
@@ -30,7 +27,8 @@ export default function LandingPage() {
         {/* overlay */}
         <div className="absolute inset-0 bg-gradient-to-r from-gray-900/70 via-transparent to-gray-900/40" />
 
-        <div className="relative z-10 mx-auto w-full max-w-4xl px-6 text-center">
+        {/* Use .container for full width and spacing */}
+        <div className="relative z-10 container w-full text-center">
           <h1 className="mb-4 text-4xl leading-tight font-extrabold tracking-tight text-white text-shadow-md sm:text-5xl md:text-6xl">
             Ready to level up your YouTube channel?
           </h1>
@@ -76,6 +74,14 @@ export default function LandingPage() {
       {/* features */}
       <section className="section">
         <div className="mx-auto max-w-7xl">
+          {/* MVP disclaimer */}
+          <div className="mb-6">
+            <div className="rounded-lg bg-yellow-50 p-4 text-sm text-yellow-900 shadow dark:bg-yellow-900/20 dark:text-yellow-200">
+              <strong>Disclaimer:</strong> YouGnosis is in its initial
+              development stage (MVP). Features and data may change, and bugs
+              may occur. Use at your own risk.
+            </div>
+          </div>
           <div className="mb-12 text-center">
             <h2 className="card-title mb-4 text-2xl sm:text-3xl">
               Unlock Your Channel's Potential
@@ -110,8 +116,6 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
-
-      <Footer />
-    </div>
+    </main>
   );
 }
