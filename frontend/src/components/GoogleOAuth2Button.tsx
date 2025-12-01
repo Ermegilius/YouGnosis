@@ -1,9 +1,15 @@
 import React, { useState } from "react";
 
+interface GoogleOAuth2ButtonProps {
+  disabled?: boolean;
+}
+
 /**
  * GoogleOAuth2Button - Initiates custom Google OAuth login flow with YouTube scopes
  */
-const GoogleOAuth2Button: React.FC = () => {
+const GoogleOAuth2Button: React.FC<GoogleOAuth2ButtonProps> = ({
+  disabled,
+}) => {
   const [loading, setLoading] = useState(false);
 
   const handleLogin = () => {
@@ -18,7 +24,7 @@ const GoogleOAuth2Button: React.FC = () => {
     <div className="w-full">
       <button
         onClick={handleLogin}
-        disabled={loading}
+        disabled={loading || disabled}
         className="flex w-full items-center justify-center gap-3 rounded-lg bg-white px-4 py-3 text-sm font-medium text-gray-700 shadow-sm ring-1 ring-gray-300 transition-all hover:bg-gray-50 hover:shadow focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:bg-gray-800 dark:text-gray-200 dark:ring-gray-600 dark:hover:bg-gray-700"
         aria-label="Sign in with Google"
       >

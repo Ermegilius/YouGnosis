@@ -1,10 +1,14 @@
 import { Outlet } from "react-router-dom";
 import { Sidebar } from "./Sidebar";
 import type { ReactNode } from "react";
+import { Navigation } from "./Navigation";
+import { Footer } from "./Footer";
+import { ScrollToTop } from "./ScrollToTop";
 
 /**
  * ProtectedLayout - High-level layout with a persistent sidebar.
- * Wraps all authenticated routes.
+ * Sidebar is always rendered left of main content, regardless of Outlet.
+ * Main content uses .container and .section for consistent width and spacing.
  */
 export function ProtectedLayout(): ReactNode {
   const menuItems = [
@@ -23,14 +27,22 @@ export function ProtectedLayout(): ReactNode {
   ];
 
   return (
-    <div className="flex min-h-screen">
-      {/* Sidebar */}
-      <Sidebar menuItems={menuItems} />
-
-      {/* Main Content */}
-      <div className="flex-1 overflow-hidden bg-gray-100 dark:bg-gray-900">
-        <Outlet />
-      </div>
+    <div className="flex min-h-screen flex-col">
+      <ScrollToTop />
+      <Navigation />
+      <main className="flex-1 py-24">
+        <div className="flex">
+          {/* Sidebar always left, does not depend on Outlet */}
+          <Sidebar menuItems={menuItems} />
+          {/* Main content area */}
+          <div className="flex-1">
+            <div className="section container">
+              <Outlet />
+            </div>
+          </div>
+        </div>
+      </main>
+      <Footer />
     </div>
   );
 }

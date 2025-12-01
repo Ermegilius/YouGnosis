@@ -3,7 +3,6 @@ import { useAuth } from "@src/hooks/useAuth";
 import { useTheme } from "@src/hooks/useTheme";
 import { useState } from "react";
 import { Menu, X, Sun, Moon, LogOut } from "lucide-react";
-import GoogleOAuth2Button from "@src/components/GoogleOAuth2Button";
 
 /**
  * Navigation - unified header for anon + authenticated users
@@ -117,7 +116,13 @@ export function Navigation() {
               </button>
             </div>
           ) : (
-            <GoogleOAuth2Button />
+            <button
+              onClick={() => navigate("/consent")}
+              className="inline-flex items-center gap-2 rounded-md bg-gradient-to-r from-red-500 to-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:opacity-95 focus:outline-none"
+              aria-label="Sign in"
+            >
+              <span>Sign in</span>
+            </button>
           )}
 
           {/* Mobile Menu Toggle */}
