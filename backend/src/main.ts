@@ -13,7 +13,8 @@ async function bootstrap() {
     const configService = app.get(ConfigService);
 
     // Get config values with proper defaults
-    const port = configService.getOrThrow<number>('PORT');
+    const port =
+      Number(process.env.PORT) || configService.get<number>('PORT') || 3000;
     const nodeEnv = configService.getOrThrow<string>('NODE_ENV');
     const allowedOriginsStr =
       configService.getOrThrow<string>('ALLOWED_ORIGINS');

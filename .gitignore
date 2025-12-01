@@ -14,8 +14,8 @@
 # ======================
 supabase/.env.local
 supabase/.env.keys
-!supabase/.env.production
-!supabase/.env.preview
+supabase/.env.production
+supabase/.env.preview
 !.env.supabase.local.template
 supabase-project
 supabase-prod
@@ -149,4 +149,6 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 .nuxt/
 .output/
 .vercel/
-.github/copilot-instructions.md
+.github/*instructions.md
+.github/instructions/*.instructions.md
+scripts/

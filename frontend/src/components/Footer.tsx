@@ -8,6 +8,8 @@ export function Footer(): ReactNode {
   return (
     <footer className="card-content mt-12 border-t py-6 text-center text-xs shadow-inner">
       &copy; {new Date().getFullYear()} YouGnosis. All rights reserved.
+      <br />
+      <span>DEVELOPMENT: version_28.11.2025_1</span>
     </footer>
   );
 }

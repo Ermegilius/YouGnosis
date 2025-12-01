@@ -1,10 +1,7 @@
 # YouGnosis
 
-YouGnosis is my very first big, completely solo project. I decided to develop it as a helpful tool for my wife, who is working hard to grow her small YouTube channel. This platform is designed to assist content creators like her in analyzing their channel performance.
+YouGnosis is my very first big, completely solo project. This platform is designed to assist content creators like her in analyzing their channel performance.
 I know there are relatively similar tools out there, but I build this to grow my own skills.
-
-By the way, if you enjoy creative content, check out and subscribe to her channel:  
-**[Hiiri Tales](https://www.youtube.com/@Hiiri_Tales)** — your support would mean the world to us!
 
 You can use YouGnosis for free for **non-commercial purposes**. If you wish to use it commercially, you must obtain explicit permission from the copyright holder.
 
