@@ -3,6 +3,8 @@
 YouGnosis is my very first big, completely solo project. This platform is designed to assist content creators in analyzing their channel performance.
 I know there are relatively similar tools out there, but I build this to grow my own skills.
 
+As is on 02.12.2025, YouGnosis is in active development, and new features are being added. Right now it can only retrieve and store analytics data from YouTube API.
+
 You can use YouGnosis for free for **non-commercial purposes**. If you wish to use it commercially, you must obtain explicit permission from the copyright holder.
 
 ---
