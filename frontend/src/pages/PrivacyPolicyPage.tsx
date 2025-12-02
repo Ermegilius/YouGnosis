@@ -149,6 +149,39 @@ export default function PrivacyPolicyPage(): ReactNode {
           acceptance of the updated policy.
         </p>
       </section>
+      <section className="mb-8">
+        <h2 className="mb-2 text-xl font-semibold">Lawful Basis for Processing</h2>
+        <p>
+          We process your personal data based on your consent, our contractual obligations to provide services, and our legitimate interests in improving YouGnosis.
+        </p>
+      </section>
+      <section className="mb-8">
+        <h2 className="mb-2 text-xl font-semibold">Your Rights Under GDPR</h2>
+        <ul className="mt-2 ml-6 list-disc">
+          <li>Access, update, or delete your personal information</li>
+          <li>Request restriction or object to processing</li>
+          <li>Request data portability</li>
+          <li>Lodge a complaint with a supervisory authority</li>
+        </ul>
+      </section>
+      <section className="mb-8">
+        <h2 className="mb-2 text-xl font-semibold">Data Retention</h2>
+        <p>
+          We retain your data as long as your account is active or as required to provide services and comply with legal obligations.
+        </p>
+      </section>
+      <section className="mb-8">
+        <h2 className="mb-2 text-xl font-semibold">International Transfers</h2>
+        <p>
+          Your data may be processed outside the EU. We ensure appropriate safeguards for such transfers, including standard contractual clauses.
+        </p>
+      </section>
+      <section className="mb-8">
+        <h2 className="mb-2 text-xl font-semibold">Data Breach Notification</h2>
+        <p>
+          In the event of a data breach affecting your personal data, we will notify you and relevant authorities as required by law.
+        </p>
+      </section>
       <section>
         <h2 className="mb-2 text-xl font-semibold">9. Contact</h2>
         <p>
