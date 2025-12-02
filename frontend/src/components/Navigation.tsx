@@ -58,7 +58,7 @@ export function Navigation() {
           </span>
         </button>
 
-        {/* Center: Navigation Links */}
+        {/* Center: Navigation Links for logged in users*/}
         <nav className="hidden md:flex md:flex-1 md:items-center md:justify-center md:gap-8">
           <Link
             to="/"
@@ -66,31 +66,34 @@ export function Navigation() {
           >
             Home
           </Link>
-
-          <Link
-            to="/dashboard"
-            className="text-sm font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100"
-          >
-            Dashboard
-          </Link>
-          <Link
-            to="/analytics"
-            className="text-sm font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100"
-          >
-            Analytics
-          </Link>
-          <Link
-            to="/competitors"
-            className="text-sm font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100"
-          >
-            Competitors
-          </Link>
-          <Link
-            to="/seo"
-            className="text-sm font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100"
-          >
-            SEO
-          </Link>
+          {session && (
+            <>
+              <Link
+                to="/dashboard"
+                className="text-sm font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100"
+              >
+                Dashboard
+              </Link>
+              <Link
+                to="/analytics"
+                className="text-sm font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100"
+              >
+                Analytics
+              </Link>
+              <Link
+                to="/competitors"
+                className="text-sm font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100"
+              >
+                Competitors
+              </Link>
+              <Link
+                to="/seo"
+                className="text-sm font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100"
+              >
+                SEO
+              </Link>
+            </>
+          )}
         </nav>
 
         {/* Right: Actions */}
