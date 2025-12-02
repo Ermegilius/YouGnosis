@@ -119,17 +119,25 @@ You can use YouGnosis for free for **non-commercial purposes**. If you wish to u
 
 ### Required Variables
 
-| Variable                    | Description                        |
-| --------------------------- | ---------------------------------- |
-| NODE_ENV                    | Environment mode (`development`)   |
-| PORT                        | Backend server port                |
-| SUPABASE_PROJECT_ID         | Supabase project ID                |
-| SUPABASE_DB_PASSWORD        | Supabase database password         |
-| SUPABASE_URL                | Supabase project URL               |
-| SUPABASE_PUBLISHABLE_KEY    | Supabase public API key            |
-| SUPABASE_SECRET_KEY_DEFAULT | Supabase secret API key (backend)  |
-| VITE_SUPABASE_URL           | Supabase URL for frontend          |
-| VITE_API_URL                | Backend API URL for frontend proxy |
+| Variable                      | Description                                          |
+| ----------------------------- | ---------------------------------------------------- |
+| NODE_ENV                      | Environment mode (`development`, `production`, etc.) |
+| PORT                          | Backend server port                                  |
+| SUPABASE_PROJECT_ID           | Supabase project ID                                  |
+| SUPABASE_DB_PASSWORD          | Supabase database password                           |
+| SUPABASE_URL                  | Supabase project URL                                 |
+| SUPABASE_STORAGE_URL          | Supabase storage URL                                 |
+| SUPABASE_PUBLISHABLE_KEY      | Supabase public API key                              |
+| SUPABASE_SECRET_KEY_DEFAULT   | Supabase secret API key (backend only)               |
+| VITE_NODE_ENV                 | Frontend environment mode                            |
+| VITE_PORT                     | Frontend dev server port                             |
+| VITE_SUPABASE_URL             | Supabase URL for frontend                            |
+| VITE_SUPABASE_PUBLISHABLE_KEY | Supabase public API key for frontend                 |
+| VITE_API_URL                  | Backend API URL for frontend proxy                   |
+| VITE_FRONTEND_URL             | Public frontend URL                                  |
+| GOOGLE_OAUTH_CLIENT_ID        | Google OAuth2 client ID                              |
+| GOOGLE_OAUTH_CLIENT_SECRET    | Google OAuth2 client secret                          |
+| ALLOWED_ORIGINS               | Comma-separated list of allowed CORS origins         |
 
 Refer to `.env.example` for a complete list of environment variables.
 
