@@ -115,10 +115,10 @@ export default function PrivacyPolicyPage(): ReactNode {
         <p className="mt-2">
           To exercise your rights, email{" "}
           <a
-            href="mailto:support@yougnosis.com"
+            href="mailto:yougnosis@gmail.com"
             className="text-blue-600 underline"
           >
-            support@yougnosis.com
+            yougnosis@gmail.com
           </a>
           .
         </p>
@@ -150,9 +150,13 @@ export default function PrivacyPolicyPage(): ReactNode {
         </p>
       </section>
       <section className="mb-8">
-        <h2 className="mb-2 text-xl font-semibold">Lawful Basis for Processing</h2>
+        <h2 className="mb-2 text-xl font-semibold">
+          Lawful Basis for Processing
+        </h2>
         <p>
-          We process your personal data based on your consent, our contractual obligations to provide services, and our legitimate interests in improving YouGnosis.
+          We process your personal data based on your consent, our contractual
+          obligations to provide services, and our legitimate interests in
+          improving YouGnosis.
         </p>
       </section>
       <section className="mb-8">
@@ -167,19 +171,22 @@ export default function PrivacyPolicyPage(): ReactNode {
       <section className="mb-8">
         <h2 className="mb-2 text-xl font-semibold">Data Retention</h2>
         <p>
-          We retain your data as long as your account is active or as required to provide services and comply with legal obligations.
+          We retain your data as long as your account is active or as required
+          to provide services and comply with legal obligations.
         </p>
       </section>
       <section className="mb-8">
         <h2 className="mb-2 text-xl font-semibold">International Transfers</h2>
         <p>
-          Your data may be processed outside the EU. We ensure appropriate safeguards for such transfers, including standard contractual clauses.
+          Your data may be processed outside the EU. We ensure appropriate
+          safeguards for such transfers, including standard contractual clauses.
         </p>
       </section>
       <section className="mb-8">
         <h2 className="mb-2 text-xl font-semibold">Data Breach Notification</h2>
         <p>
-          In the event of a data breach affecting your personal data, we will notify you and relevant authorities as required by law.
+          In the event of a data breach affecting your personal data, we will
+          notify you and relevant authorities as required by law.
         </p>
       </section>
       <section>
