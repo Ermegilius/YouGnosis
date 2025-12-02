@@ -1,6 +1,6 @@
 # YouGnosis
 
-YouGnosis is my very first big, completely solo project. This platform is designed to assist content creators like her in analyzing their channel performance.
+YouGnosis is my very first big, completely solo project. This platform is designed to assist content creators in analyzing their channel performance.
 I know there are relatively similar tools out there, but I build this to grow my own skills.
 
 You can use YouGnosis for free for **non-commercial purposes**. If you wish to use it commercially, you must obtain explicit permission from the copyright holder.
