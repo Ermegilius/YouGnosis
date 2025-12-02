@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@src/hooks/useAuth";
 import { useTheme } from "@src/hooks/useTheme";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Menu, X, Sun, Moon, LogOut } from "lucide-react";
 
 /**
@@ -15,10 +15,21 @@ export function Navigation() {
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const go = (path: string) => {
-    setMobileOpen(false);
-    navigate(path);
-  };
+  // Track cookies consent state for disabling sign-in
+  const [cookiesConsent, setCookiesConsent] = useState<string | null>(null);
+
+  useEffect(() => {
+    setCookiesConsent(localStorage.getItem("cookiesConsent"));
+    // Listen for changes
+    const handler = () =>
+      setCookiesConsent(localStorage.getItem("cookiesConsent"));
+    window.addEventListener("storage", handler);
+    window.addEventListener("cookiesConsentChanged", handler);
+    return () => {
+      window.removeEventListener("storage", handler);
+      window.removeEventListener("cookiesConsentChanged", handler);
+    };
+  }, []);
 
   return (
     <header
@@ -28,7 +39,7 @@ export function Navigation() {
       <div className="container mx-auto flex h-[84px] items-center justify-between px-4 sm:px-6 lg:px-10">
         {/* Left: Logo */}
         <button
-          onClick={() => go(session ? "/dashboard" : "/")}
+          onClick={() => navigate(session ? "/dashboard" : "/")}
           className="flex items-center gap-3 focus:outline-none"
           aria-label="YouGnosis home"
         >
@@ -118,8 +129,14 @@ export function Navigation() {
           ) : (
             <button
               onClick={() => navigate("/consent")}
-              className="inline-flex items-center gap-2 rounded-md bg-gradient-to-r from-red-500 to-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:opacity-95 focus:outline-none"
+              className={`inline-flex items-center gap-2 rounded-md bg-gradient-to-r from-red-500 to-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:opacity-95 focus:outline-none ${cookiesConsent !== "accepted" ? "cursor-not-allowed opacity-50" : "cursor-pointer opacity-100"}`}
               aria-label="Sign in"
+              disabled={cookiesConsent !== "accepted"}
+              title={
+                cookiesConsent !== "accepted"
+                  ? "Accept cookies to enable sign in"
+                  : undefined
+              }
             >
               <span>Sign in</span>
             </button>
@@ -145,25 +162,25 @@ export function Navigation() {
         <div className="absolute top-[84px] right-0 left-0 z-40 bg-white dark:bg-gray-900">
           <nav className="flex flex-col gap-3 p-4">
             <button
-              onClick={() => go("/dashboard")}
+              onClick={() => navigate("/dashboard")}
               className="text-left text-base font-medium text-gray-800 dark:text-gray-200"
             >
               Dashboard
             </button>
             <button
-              onClick={() => go("/analytics")}
+              onClick={() => navigate("/analytics")}
               className="text-left text-base font-medium text-gray-800 dark:text-gray-200"
             >
               Analytics
             </button>
             <button
-              onClick={() => go("/competitors")}
+              onClick={() => navigate("/competitors")}
               className="text-left text-base font-medium text-gray-800 dark:text-gray-200"
             >
               Competitors
             </button>
             <button
-              onClick={() => go("/seo")}
+              onClick={() => navigate("/seo")}
               className="text-left text-base font-medium text-gray-800 dark:text-gray-200"
             >
               SEO
