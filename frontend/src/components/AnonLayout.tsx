@@ -3,6 +3,7 @@ import { Footer } from "@src/components/Footer";
 import { Outlet } from "react-router-dom";
 import type { ReactNode } from "react";
 import { ScrollToTop } from "./ScrollToTop";
+import { CookiesConsentBanner } from "./CookiesConsentBanner";
 
 /**
  * AnonLayout - Wrapper for all public/anonymous pages.
@@ -17,6 +18,7 @@ export function AnonLayout(): ReactNode {
       <main className="flex-1">
         <Outlet />
       </main>
+      <CookiesConsentBanner />
       <Footer />
     </div>
   );

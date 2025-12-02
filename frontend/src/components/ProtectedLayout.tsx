@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { Navigation } from "./Navigation";
 import { Footer } from "./Footer";
 import { ScrollToTop } from "./ScrollToTop";
+import { CookiesConsentBanner } from "./CookiesConsentBanner";
 
 /**
  * ProtectedLayout - High-level layout with a persistent sidebar.
@@ -42,6 +43,7 @@ export function ProtectedLayout(): ReactNode {
           </div>
         </div>
       </main>
+      <CookiesConsentBanner />
       <Footer />
     </div>
   );

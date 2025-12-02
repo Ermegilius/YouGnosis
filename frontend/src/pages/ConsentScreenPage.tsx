@@ -6,8 +6,9 @@ import GoogleOAuth2Button from "@src/components/GoogleOAuth2Button";
 export function ConsentScreenPage() {
   const [agreedPrivacy, setAgreedPrivacy] = useState(false);
   const [agreedTerms, setAgreedTerms] = useState(false);
+  const consent = localStorage.getItem("cookiesConsent");
 
-  const canContinue = agreedPrivacy && agreedTerms;
+  const canContinue = agreedPrivacy && agreedTerms && consent === "accepted";
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-blue-900 to-indigo-900">
