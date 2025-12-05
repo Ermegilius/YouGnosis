@@ -43,8 +43,8 @@ export default function OAuthCallback(): ReactNode {
           throw new Error("Failed to verify session token");
         }
 
-        // Redirect to dashboard
-        navigate("/dashboard", { replace: true });
+        // Redirect home on success
+        navigate("/", { replace: true });
       } catch (err) {
         console.error("OAuth callback error:", err);
         setError("Failed to complete authentication");

@@ -18,12 +18,11 @@ import { ConsentScreenPage } from "@src/pages/ConsentScreenPage";
 import { AnonLayout } from "@src/components/AnonLayout";
 
 /**
- * CatchAll - redirect based on auth state (authenticated -> /dashboard, else -> /)
+ * CatchAll - redirect based on auth loading state
  */
 function CatchAll() {
-  const { session, loading } = useAuth();
+  const { loading } = useAuth();
   if (loading) return <LoadingSpinner />;
-  return <Navigate to={session ? "/dashboard" : "/"} replace />;
 }
 
 export const AppRouter = () => {
