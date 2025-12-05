@@ -39,7 +39,7 @@ export function Navigation() {
       <div className="container mx-auto flex h-[84px] items-center justify-between px-4 sm:px-6 lg:px-10">
         {/* Left: Logo */}
         <button
-          onClick={() => navigate(session ? "/dashboard" : "/")}
+          onClick={() => navigate("/")}
           className="flex items-center gap-3 focus:outline-none"
           aria-label="YouGnosis home"
         >
@@ -118,7 +118,7 @@ export function Navigation() {
           {/* Authenticated User Actions */}
           {session ? (
             <div className="flex items-center gap-3">
-              <span className="hidden max-w-[12rem] truncate text-sm text-gray-700 sm:inline dark:text-gray-300">
+              <span className="inline truncate text-sm text-gray-700 dark:text-gray-300">
                 {session.user.user_metadata.name}
               </span>
               <button
