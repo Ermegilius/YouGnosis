@@ -7,9 +7,9 @@ import { ScrollToTop } from "./ScrollToTop";
 import { CookiesConsentBanner } from "./CookiesConsentBanner";
 
 /**
- * ProtectedLayout - High-level layout with a persistent sidebar.
- * Sidebar is always rendered left of main content, regardless of Outlet.
- * Main content uses .container and .section for consistent width and spacing.
+ * ProtectedLayout - Responsive layout with sidebar.
+ * - Mobile: sidebar as horizontal menu above content
+ * - Desktop: sidebar on the left, content on the right
  */
 export function ProtectedLayout(): ReactNode {
   const menuItems = [
@@ -31,18 +31,23 @@ export function ProtectedLayout(): ReactNode {
     <div className="flex min-h-screen flex-col">
       <ScrollToTop />
       <Navigation />
-      <main className="flex-1 py-24">
-        <div className="flex">
-          {/* Sidebar always left, does not depend on Outlet */}
-          <Sidebar menuItems={menuItems} />
-          {/* Main content area */}
-          <div className="flex-1">
-            <div className="section container">
+
+      {/* Main content area with header offset */}
+      <main className="flex-1 pt-[84px]">
+        <div className="container mx-auto px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
+          {/* Responsive flex: column on mobile, row on desktop */}
+          <div className="flex flex-col gap-4 md:flex-row md:gap-6 lg:gap-8">
+            {/* Sidebar component handles its own responsive display */}
+            <Sidebar menuItems={menuItems} />
+
+            {/* Main content area - takes remaining space */}
+            <div className="min-w-0 flex-1">
               <Outlet />
             </div>
           </div>
         </div>
       </main>
+
       <CookiesConsentBanner />
       <Footer />
     </div>
