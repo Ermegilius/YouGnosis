@@ -25,7 +25,7 @@ export function Sidebar({ menuItems }: SidebarProps): ReactNode {
   };
 
   return (
-    <nav className="w-64 bg-gray-100 mr-4 dark:bg-gray-900">
+    <nav className="mr-4 w-64 bg-gray-100 dark:bg-gray-900">
       <ul className="space-y-4">
         {menuItems.map((item) => (
           <li key={item.path}>
@@ -49,7 +49,7 @@ export function Sidebar({ menuItems }: SidebarProps): ReactNode {
                         to={subItem.path}
                         className={`block rounded-md px-4 py-2 text-sm font-medium ${
                           location.pathname === subItem.path
-                            ? "bg-blue-400 text-white"
+                            ? "bg-blue-400/50 text-white"
                             : "text-gray-600 hover:bg-gray-200 dark:text-gray-400 dark:hover:bg-gray-800"
                         }`}
                       >

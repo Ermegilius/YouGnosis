@@ -1,9 +1,7 @@
 import { Route, Routes, Navigate } from "react-router-dom";
-import { useAuth } from "@src/hooks/useAuth";
 import { ProtectedRoute } from "../components/ProtectedRoute";
 import App from "../App";
 import LandingPage from "@src/pages/LandingPage";
-import { LoadingSpinner } from "@src/components/ui";
 import { AnalyticsDashboard } from "@src/components/AnalyticsDashboard";
 import { CompetitorComparison } from "@src/components/CompetitorComparison";
 import { SEORecommendations } from "@src/components/SEORecommendations";
@@ -22,8 +20,7 @@ import { AnalyticsOverview } from "@src/components/AnalyticsOverview";
  * CatchAll - redirect based on auth loading state
  */
 function CatchAll() {
-  const { loading } = useAuth();
-  if (loading) return <LoadingSpinner />;
+  return <Navigate to="/" replace />; //TODO: replace with Error page later
 }
 
 export const AppRouter = () => {
@@ -59,7 +56,7 @@ export const AppRouter = () => {
         </Route>
       </Route>
 
-      {/* Catch-all: redirect based on auth */}
+      {/* Catch-all: redirect all unknown routes */}
       <Route path="*" element={<CatchAll />} />
     </Routes>
   );
