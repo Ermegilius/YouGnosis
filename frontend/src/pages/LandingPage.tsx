@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import hero from "../assets/hero.webp";
 import { ArrowRight } from "lucide-react";
+import { useAuth } from "@src/hooks/useAuth";
 
 /**
  * LandingPage - refined hero and sections styling
@@ -10,6 +11,8 @@ import { ArrowRight } from "lucide-react";
  * - layout uses .container for full width, not max-w-4xl
  */
 export default function LandingPage() {
+  const { session } = useAuth();
+
   return (
     <main className="flex flex-col">
       <section className="relative flex min-h-[640px] items-center justify-center">
@@ -37,26 +40,29 @@ export default function LandingPage() {
             with data-driven recommendations.
           </p>
           <div className="flex items-center justify-center gap-4">
-            <Link
-              to="/login"
-              className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-red-500 to-blue-600 px-6 py-3 text-base font-semibold text-white shadow-lg transition-transform hover:scale-[1.02]"
-            >
-              Get Started
-              <ArrowRight className="h-5 w-5" />
-            </Link>
+            {/* Show "Get Started" only for anon users */}
+            {!session && (
+              <Link
+                to="/consent"
+                className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-red-500 to-blue-600 px-6 py-3 text-base font-semibold text-white shadow-lg transition-transform hover:scale-[1.02]"
+              >
+                Get Started
+                <ArrowRight className="h-5 w-5" />
+              </Link>
+            )}
 
             <a
               href="https://github.com/ermegilius/yougnosis"
               target="_blank"
               rel="noreferrer"
-              className="hidden items-center gap-2 rounded-md bg-white/10 px-4 py-2 text-sm font-medium text-white hover:bg-white/15 md:flex"
+              className="inline-flex items-center gap-2 rounded-md bg-white/10 px-4 py-2 text-sm font-medium text-white hover:bg-white/35 md:flex"
             >
               View on GitHub
             </a>
           </div>
         </div>
 
-        {/* decorative bottom wave */}
+        {/* banner bottom wave */}
         <div
           className="pointer-events-none absolute right-0 bottom-0 left-0"
           aria-hidden="true"
