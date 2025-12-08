@@ -12,11 +12,13 @@ export const CookiesConsentProvider: React.FC<{
   const setConsent = (value: "accepted" | "declined") => {
     localStorage.setItem("cookiesConsent", value);
     setConsentState(value);
+    window.dispatchEvent(new Event("cookiesConsentChanged"));
   };
 
   const resetConsent = () => {
     localStorage.removeItem("cookiesConsent");
     setConsentState(null);
+    window.dispatchEvent(new Event("cookiesConsentChanged"));
   };
 
   useEffect(() => {
