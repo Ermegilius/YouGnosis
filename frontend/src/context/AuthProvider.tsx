@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "../supabase/supabase";
 import { AuthContext } from "./AuthContext";
+import { clearCachedAuthToken } from "@src/api/axios";
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
@@ -20,14 +21,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
         setSession(session);
         setUser(session?.user ?? null);
-
-        // Store user ID in localStorage for API calls
-        // ❌ No longer needed, backend relies solely on Supabase JWT
-        // if (session?.user?.id) {
-        //   localStorage.setItem("userId", session.user.id);
-        // } else {
-        //   localStorage.removeItem("userId");
-        // }
 
         setLoading(false);
       })
@@ -60,6 +53,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
       setSession(null);
       setUser(null);
+      clearCachedAuthToken();
+      localStorage.removeItem("cookiesConsent"); //TODO: decide if this is needed later
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Sign out failed";
