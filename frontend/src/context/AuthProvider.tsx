@@ -55,6 +55,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setUser(null);
       clearCachedAuthToken();
       localStorage.removeItem("cookiesConsent"); //TODO: decide if this is needed later
+      window.dispatchEvent(new Event("cookiesConsentChanged")); // Notify listeners of consent change
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Sign out failed";
