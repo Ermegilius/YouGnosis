@@ -8,14 +8,14 @@ import { CookiesConsentBanner } from "./CookiesConsentBanner";
 /**
  * AnonLayout - Wrapper for all public/anonymous pages.
  * Renders Navigation, Footer, and the current route via Outlet.
- * Ensures main content uses .container for full width and spacing.
  */
 export function AnonLayout(): ReactNode {
   return (
     <div className="flex min-h-screen flex-col">
       <ScrollToTop />
       <Navigation />
-      <main className="flex-1">
+      {/* Add pt-[84px] to offset fixed header */}
+      <main className="flex-1 pt-[84px]">
         <Outlet />
       </main>
       <CookiesConsentBanner />

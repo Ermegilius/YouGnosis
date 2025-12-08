@@ -1,9 +1,7 @@
 import { Route, Routes, Navigate } from "react-router-dom";
-import { useAuth } from "@src/hooks/useAuth";
 import { ProtectedRoute } from "../components/ProtectedRoute";
 import App from "../App";
 import LandingPage from "@src/pages/LandingPage";
-import { LoadingSpinner } from "@src/components/ui";
 import { AnalyticsDashboard } from "@src/components/AnalyticsDashboard";
 import { CompetitorComparison } from "@src/components/CompetitorComparison";
 import { SEORecommendations } from "@src/components/SEORecommendations";
@@ -16,14 +14,13 @@ import PrivacyPolicyPage from "@src/pages/PrivacyPolicyPage";
 import TermsOfUsePage from "@src/pages/TermsOfUsePage";
 import { ConsentScreenPage } from "@src/pages/ConsentScreenPage";
 import { AnonLayout } from "@src/components/AnonLayout";
+import { AnalyticsOverview } from "@src/components/AnalyticsOverview";
 
 /**
- * CatchAll - redirect based on auth state (authenticated -> /dashboard, else -> /)
+ * CatchAll - redirect based on auth loading state
  */
 function CatchAll() {
-  const { session, loading } = useAuth();
-  if (loading) return <LoadingSpinner />;
-  return <Navigate to={session ? "/dashboard" : "/"} replace />;
+  return <Navigate to="/" replace />; //TODO: replace with Error page later
 }
 
 export const AppRouter = () => {
@@ -51,6 +48,7 @@ export const AppRouter = () => {
         <Route element={<ProtectedLayout />}>
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/analytics" element={<AnalyticsDashboard />} />
+          <Route path="/analytics/overview" element={<AnalyticsOverview />} />
           <Route path="/analytics/report-types" element={<ReportTypes />} />
           <Route path="/analytics/youtube-jobs" element={<YouTubeJobs />} />
           <Route path="/competitors" element={<CompetitorComparison />} />
@@ -58,7 +56,7 @@ export const AppRouter = () => {
         </Route>
       </Route>
 
-      {/* Catch-all: redirect based on auth */}
+      {/* Catch-all: redirect all unknown routes */}
       <Route path="*" element={<CatchAll />} />
     </Routes>
   );

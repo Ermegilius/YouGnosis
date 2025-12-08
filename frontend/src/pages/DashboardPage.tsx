@@ -11,7 +11,7 @@ export default function DashboardPage(): ReactNode {
     // Use only .container for horizontal width, .section for vertical spacing.
     // Add responsive grid for cards on larger screens.
     <div className="section container">
-      <div className="flex flex-col gap-8 md:grid md:grid-cols-2 xl:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2 xl:grid-cols-3">
         <DashboardSection title="User Profile">
           <SessionData />
         </DashboardSection>

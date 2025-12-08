@@ -10,7 +10,7 @@ import type { ReactNode } from "react";
 export const AnalyticsDashboard = (): ReactNode => {
   return (
     // Overlay wrapper ensures min-width for dashboard content area
-    <div className="section container min-w-[640px]">
+    <div className="section container">
       {/* Heading */}
       <div className="mx-auto mb-8 max-w-5xl">
         <h1 className="text-gradient card-title mb-2 text-3xl font-bold sm:text-4xl">
@@ -22,7 +22,7 @@ export const AnalyticsDashboard = (): ReactNode => {
       </div>
 
       {/* Responsive grid for dashboard widgets */}
-      <div className="mx-auto grid max-w-5xl gap-8 md:grid-cols-2 xl:grid-cols-3">
+      <div className="mx-auto grid max-w-5xl grid-cols-1 gap-4 sm:gap-8 md:grid-cols-2 xl:grid-cols-3">
         {/* Example Widget Card */}
         <section className="card flex min-h-[180px] flex-col items-start justify-center">
           <h2 className="card-title mb-2 text-xl">Channel Overview</h2>

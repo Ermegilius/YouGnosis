@@ -67,9 +67,9 @@
   --radius-full: 9999px;
 
   /* Spacing */
-  --spacing-section: 3rem;
-  --spacing-section-sm: 4rem;
-  --spacing-section-lg: 1rem;
+  --spacing-section-mobile: 1.5rem;
+  --spacing-section-tablet: 2rem;
+  --spacing-section-desktop: 3rem;
 
   /* Animations */
   --animate-fade-in: fadeIn 0.3s ease-in-out;
@@ -128,6 +128,10 @@
 /* Components Layer - Reusable component styles with dark mode */
 @layer components {
   /* Buttons */
+  button {
+    cursor: pointer;
+  }
+
   .btn-primary {
     display: inline-flex;
     align-items: center;
@@ -344,23 +348,21 @@
   }
 
   .section {
-    padding-left: 1.5rem;
-    padding-right: 1.5rem;
-    padding-top: var(--spacing-section);
-    padding-bottom: var(--spacing-section);
+    padding-top: var(--spacing-section-mobile);
+    padding-bottom: var(--spacing-section-mobile);
   }
 
   @media (min-width: 640px) {
     .section {
-      padding-top: var(--spacing-section-sm);
-      padding-bottom: var(--spacing-section-sm);
+      padding-top: var(--spacing-section-tablet);
+      padding-bottom: var(--spacing-section-tablet);
     }
   }
 
   @media (min-width: 1024px) {
     .section {
-      padding-top: var(--spacing-section-lg);
-      padding-bottom: var(--spacing-section-lg);
+      padding-top: var(--spacing-section-desktop);
+      padding-bottom: var(--spacing-section-desktop);
     }
   }
 }
