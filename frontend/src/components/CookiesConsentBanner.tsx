@@ -1,31 +1,10 @@
-import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { useCookiesConsent } from "@src/hooks/useCookiesConsent";
 
-/**
-
-CookiesConsentBanner - GDPR-compliant cookies consent banner for YouGnosis.
-User must accept cookies to use the app
-Banner blocks Login button until accepted.
-Informs users about cookies (analytics, essential, third-party).
-Accessible, responsive, styled with Tailwind.
-Stores consent in localStorage ("cookiesConsent" = "accepted" | "declined").
-Links to Privacy Policy for details.
-*/
 export function CookiesConsentBanner() {
-  const [visible, setVisible] = useState(false);
-  useEffect(() => {
-    // Show banner only if consent not set
-    const consent = localStorage.getItem("cookiesConsent");
-    setVisible(consent !== "accepted");
-  }, []);
+  const { consent, setConsent } = useCookiesConsent();
 
-  const handleConsent = (accepted: boolean) => {
-    localStorage.setItem("cookiesConsent", accepted ? "accepted" : "declined");
-    window.dispatchEvent(new Event("cookiesConsentChanged"));
-    setVisible(false);
-  };
-
-  if (!visible) return null;
+  if (consent === "accepted") return null;
 
   return (
     <div
@@ -50,14 +29,14 @@ export function CookiesConsentBanner() {
         <div className="mt-2 flex gap-2 sm:mt-0">
           <button
             className="btn-primary px-4 py-2 text-sm"
-            onClick={() => handleConsent(true)}
+            onClick={() => setConsent("accepted")}
             aria-label="Accept cookies"
           >
             Accept
           </button>
           <button
             className="btn-ghost px-4 py-2 text-sm"
-            onClick={() => handleConsent(false)}
+            onClick={() => setConsent("declined")}
             aria-label="Decline cookies"
           >
             Decline

@@ -1,8 +1,9 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@src/hooks/useAuth";
 import { useTheme } from "@src/hooks/useTheme";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Menu, X, Sun, Moon, LogOut } from "lucide-react";
+import { useCookiesConsent } from "@src/hooks/useCookiesConsent";
 
 /**
  * Navigation - unified header for anon + authenticated users
@@ -13,19 +14,7 @@ export function Navigation() {
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const [cookiesConsent, setCookiesConsent] = useState<string | null>(null);
-
-  useEffect(() => {
-    setCookiesConsent(localStorage.getItem("cookiesConsent"));
-    const handler = () =>
-      setCookiesConsent(localStorage.getItem("cookiesConsent"));
-    window.addEventListener("storage", handler);
-    window.addEventListener("cookiesConsentChanged", handler);
-    return () => {
-      window.removeEventListener("storage", handler);
-      window.removeEventListener("cookiesConsentChanged", handler);
-    };
-  }, []);
+  const { consent } = useCookiesConsent();
 
   // Close mobile menu on navigation
   const handleMobileNav = (path: string) => {
@@ -137,11 +126,15 @@ export function Navigation() {
           ) : (
             <button
               onClick={() => handleMobileNav("/consent")}
-              className={`inline-flex items-center gap-2 rounded-md bg-gradient-to-r from-red-500 to-blue-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm hover:opacity-95 focus:outline-none sm:px-4 sm:py-2 ${cookiesConsent !== "accepted" ? "cursor-not-allowed opacity-50" : "opacity-100"}`}
+              className={`inline-flex items-center gap-2 rounded-md bg-gradient-to-r from-red-500 to-blue-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm hover:opacity-95 focus:outline-none sm:px-4 sm:py-2 ${
+                consent !== "accepted"
+                  ? "cursor-not-allowed opacity-50"
+                  : "opacity-100"
+              }`}
               aria-label="Sign in"
-              disabled={cookiesConsent !== "accepted"}
+              disabled={consent !== "accepted"}
               title={
-                cookiesConsent !== "accepted"
+                consent !== "accepted"
                   ? "Accept cookies to enable sign in"
                   : undefined
               }

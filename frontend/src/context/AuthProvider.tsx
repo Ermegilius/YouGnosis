@@ -3,12 +3,14 @@ import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "../supabase/supabase";
 import { AuthContext } from "./AuthContext";
 import { clearCachedAuthToken } from "@src/api/axios";
+import { useCookiesConsent } from "@src/hooks/useCookiesConsent";
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { resetConsent } = useCookiesConsent();
 
   useEffect(() => {
     // Get current session (persisted by supabase client)
@@ -54,7 +56,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setSession(null);
       setUser(null);
       clearCachedAuthToken();
-      localStorage.removeItem("cookiesConsent"); //TODO: decide if this is needed later
+      resetConsent();
       window.dispatchEvent(new Event("cookiesConsentChanged")); // Notify listeners of consent change
     } catch (err) {
       const errorMessage =
