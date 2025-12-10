@@ -64,4 +64,12 @@ export default tseslint.config(
       'no-console': ['warn', { allow: ['warn', 'error'] }],
     },
   },
+  {
+    files: ['**/*.spec.ts', '**/*.e2e-spec.ts'],
+    rules: {
+      '@typescript-eslint/unbound-method': 'off', // Allow Jest expect(fn) patterns in tests
+      'no-console': 'off', // Allow console in tests
+
+    },
+  },
 );

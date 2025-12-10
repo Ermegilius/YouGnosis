@@ -39,7 +39,7 @@ export interface OAuthCallbackQuery {
 
 /**
  * Request body for creating a YouTube reporting job
-* This is the DTO for the POST /youtube/create-job endpoint
+ * This is the DTO for the POST /youtube/create-job endpoint
  */
 export interface CreateJobRequest {
   reportTypeId: string;
@@ -86,6 +86,18 @@ export interface ApiErrorResponse {
   message: string;
   error?: string;
   timestamp?: string;
+}
+
+/**
+ * Type guard for ApiErrorResponse
+ */
+export function isApiErrorResponse(data: unknown): data is ApiErrorResponse {
+  return (
+    typeof data === "object" &&
+    data !== null &&
+    typeof (data as ApiErrorResponse).message === "string" &&
+    typeof (data as ApiErrorResponse).statusCode === "number"
+  );
 }
 
 // ===========================
