@@ -3,6 +3,11 @@ import { TestDataService } from './test-data.service';
 import { SupabaseService } from '../supabase/supabase.service';
 import type { TestTableRow } from './interfaces/test-data.interface';
 import { Logger } from '@nestjs/common';
+import {
+  createMockSupabaseClient,
+  createMockSupabaseService,
+  resetMockSupabaseClient,
+} from '../../../test/utils/mock-supabase';
 
 // Mock data for test_table
 const mockRows: TestTableRow[] = [
@@ -10,15 +15,10 @@ const mockRows: TestTableRow[] = [
   { id: '2', created_at: '2023-01-02T00:00:00Z', some_text_here: 'row2' },
 ];
 
-// Mock Supabase client
-const mockSupabaseClient = {
-  from: jest.fn().mockReturnThis(),
-  select: jest.fn(),
-};
-
 describe('TestDataService', () => {
   let service: TestDataService;
   let supabaseService: SupabaseService;
+  const mockSupabaseClient = createMockSupabaseClient<TestTableRow[]>();
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -26,9 +26,7 @@ describe('TestDataService', () => {
         TestDataService,
         {
           provide: SupabaseService,
-          useValue: {
-            getClient: jest.fn(() => mockSupabaseClient),
-          },
+          useValue: createMockSupabaseService(mockSupabaseClient),
         },
       ],
     }).compile();
@@ -37,7 +35,7 @@ describe('TestDataService', () => {
     supabaseService = module.get<SupabaseService>(SupabaseService);
 
     // Reset mocks before each test
-    jest.clearAllMocks();
+    resetMockSupabaseClient(mockSupabaseClient);
     jest.spyOn(Logger.prototype, 'log').mockImplementation(() => {});
     jest.spyOn(Logger.prototype, 'error').mockImplementation(() => {});
   });

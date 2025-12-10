@@ -7,6 +7,10 @@ import { TestDataService } from '@src/modules/test-data/test-data.service';
 import { SupabaseService } from '@src/modules/supabase/supabase.service';
 import type { TestTableRow } from '@src/modules/test-data/interfaces/test-data.interface';
 import { isApiErrorResponse } from '@common/api.types';
+import {
+  createMockSupabaseService,
+  createMockSupabaseClient,
+} from '../../utils/mock-supabase';
 
 describe('TestDataController (e2e)', () => {
   let app: INestApplication;
@@ -18,15 +22,12 @@ describe('TestDataController (e2e)', () => {
   ];
 
   beforeAll(async () => {
+    const mockClient = createMockSupabaseClient<TestTableRow[]>();
     const moduleFixture = await Test.createTestingModule({
       imports: [TestDataModule],
     })
       .overrideProvider(SupabaseService)
-      .useValue({
-        onModuleInit: jest.fn(),
-        getClient: jest.fn(),
-        getAdminClient: jest.fn(),
-      })
+      .useValue(createMockSupabaseService(mockClient))
       .overrideProvider(TestDataService)
       .useValue({
         getTestData: jest.fn().mockResolvedValue(mockRows),
