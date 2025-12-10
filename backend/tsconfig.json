@@ -18,6 +18,7 @@
       "@common/*": ["../common/*"],
       "@src/*": ["./src/*"]
     },
+    "types": ["jest", "node"],
 
     "incremental": true,
     "skipLibCheck": true,
@@ -28,6 +29,7 @@
     "noFallthroughCasesInSwitch": false,
     "typeRoots": [
       "./node_modules/@types",
+      "../node_modules/@types", // include the root node_modules/@types for hoisted packages
       "./src/types" // include custom type definitions
     ]
   },
