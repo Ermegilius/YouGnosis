@@ -65,17 +65,6 @@ jobs:
       - name: Run Backend e2e Tests
         run: npm run test:backend:e2e
 
-      - name: Debug coverage files
-        if: always()
-        run: |
-          echo "Working directory: $(pwd)"
-          echo "Root coverage:"
-          ls -la coverage || echo "no repo-root/coverage"
-          echo "backend/coverage:"
-          ls -la backend/coverage || echo "no backend/coverage"
-          echo "Tree (top-level):"
-          ls -la
-
       - name: Upload Test Coverage
         if: always()
         uses: actions/upload-artifact@v4
