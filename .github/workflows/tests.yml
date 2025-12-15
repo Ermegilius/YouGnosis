@@ -74,10 +74,3 @@ jobs:
             coverage
             backend/coverage
           retention-days: 7
-
-      - name: Archive Logs on Failure
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: logs
-          path: ./logs
