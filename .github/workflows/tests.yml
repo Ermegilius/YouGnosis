@@ -13,7 +13,7 @@ jobs:
 
     env:
       NODE_ENV: test
-      SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
+
       SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
       SUPABASE_STORAGE_URL: ${{ secrets.SUPABASE_STORAGE_URL }}
       SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
