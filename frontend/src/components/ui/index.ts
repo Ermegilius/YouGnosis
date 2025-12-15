@@ -4,7 +4,7 @@
  * Centralized export for all reusable UI components.
  */
 
-export { Accordion } from "@src/components/ui/Accordion";
+export { Accordion } from "@src/components/ui/Acc";
 export { Button } from "./Button";
 export { Card } from "./Card";
 export { ErrorMessage } from "./ErrorMessage";
