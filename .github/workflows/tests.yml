@@ -34,6 +34,13 @@ jobs:
         with:
           node-version: 20
 
+      - name: Cache node_modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            **/node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+
       - name: Install dependencies
         run: npm install
 
@@ -45,3 +52,17 @@ jobs:
 
       - name: Run Backend e2e Tests
         run: npm run test:backend:e2e
+
+      - name: Upload Test Coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: backend/coverage # Adjust path if needed
+
+      - name: Archive Logs on Failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: logs
+          path: ./logs
