@@ -56,7 +56,8 @@ describe('TestDataController (e2e)', () => {
 
   it('GET /api/test-data should handle generic service errors securely', async () => {
     // 1. Simulate a raw internal Error (e.g., DB connection failed)
-    const internalSecretMessage = 'Database connection failed at 127.0.0.1';
+    const internalSecretMessage =
+      'Mock error from Jest: Database connection failed at 127.0.0.1';
     (testDataService.getTestData as jest.Mock).mockRejectedValueOnce(
       new Error(internalSecretMessage),
     );
