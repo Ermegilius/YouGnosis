@@ -1,5 +1,7 @@
 # YouGnosis
 
+![CI](https://github.com/Ermegilius/YouGnosis/workflows/CI/badge.svg)
+
 YouGnosis is my very first big, completely solo project. This platform is designed to assist content creators in analyzing their channel performance.
 I know there are relatively similar tools out there, but I build this to grow my own skills.
 
